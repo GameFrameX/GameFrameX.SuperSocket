@@ -11,4 +11,16 @@
         <ProjectReference Include="..\GameFrameX.SuperSocket.Connection\GameFrameX.SuperSocket.Connection.csproj"/>
         <ProjectReference Include="..\GameFrameX.SuperSocket.Server.Abstractions\GameFrameX.SuperSocket.Server.Abstractions.csproj"/>
     </ItemGroup>
+    <ItemGroup>
+        <None Include="../../logo.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+            <Link>logo.png</Link>
+        </None>
+        <None Include="../../README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>

@@ -7,6 +7,18 @@
         <Nullable>disable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\GameFrameX.SuperSocket.ProtoBase\GameFrameX.SuperSocket.ProtoBase.csproj" />
+        <ProjectReference Include="..\GameFrameX.SuperSocket.ProtoBase\GameFrameX.SuperSocket.ProtoBase.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="../../logo.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+            <Link>logo.png</Link>
+        </None>
+        <None Include="../../README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 </Project>

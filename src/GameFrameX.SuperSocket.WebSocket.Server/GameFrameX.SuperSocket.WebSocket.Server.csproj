@@ -15,4 +15,16 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0"/>
     </ItemGroup>
+    <ItemGroup>
+        <None Include="../../logo.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+            <Link>logo.png</Link>
+        </None>
+        <None Include="../../README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>
