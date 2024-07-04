@@ -1,0 +1,127 @@
+name: Publish NuGet
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 8.0.x
+          
+      - name: Install dotnet tool
+        run: dotnet tool install -g dotnetCampus.TagToVersion
+
+      - name: Set tag to version
+        run: dotnet TagToVersion -t ${{ github.ref }} -f Directory.Build.props
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish GameFrameX.SuperSocket.Client
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Client/GameFrameX.SuperSocket.Client.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.Client.Proxy
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Client.Proxy/GameFrameX.SuperSocket.Client.Proxy.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.ClientEngine
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.ClientEngine/GameFrameX.SuperSocket.ClientEngine.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.Command
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Command/GameFrameX.SuperSocket.Command.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.Connection
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Connection/GameFrameX.SuperSocket.Connection.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.Http
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Http/GameFrameX.SuperSocket.Http.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.Kestrel
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Kestrel/GameFrameX.SuperSocket.Kestrel.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.Primitives
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Primitives/GameFrameX.SuperSocket.Primitives.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.ProtoBase
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.ProtoBase/GameFrameX.SuperSocket.ProtoBase.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.Server
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Server/GameFrameX.SuperSocket.Server.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.Server.Abstractions
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Server.Abstractions/GameFrameX.SuperSocket.Server.Abstractions.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.Udp
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.Udp/GameFrameX.SuperSocket.Udp.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.WebSocket
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.WebSocket/GameFrameX.SuperSocket.WebSocket.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish GameFrameX.SuperSocket.WebSocket.Server
+        uses: alianblank/publish-nuget@v1.0.2
+        with:
+          PROJECT_FILE_PATH: src/GameFrameX.SuperSocket.WebSocket.Server/GameFrameX.SuperSocket.WebSocket.Server.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
