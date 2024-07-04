@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>SuperSocket UDP support library</Description>
-    <TargetFramework>net8.0</TargetFramework>
-
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameFrameX.SuperSocket.Primitives\GameFrameX.SuperSocket.Primitives.csproj" />    

@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>SuperSocket library to abstract underlying communications as connection with pipeline.</Description>
-    <TargetFramework>net8.0</TargetFramework>
+    <Description>SuperSocket library to abstract underlying communications as connection with pipeline.</Description>    
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.IO.Pipelines" Version="8.0.0" />

@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>SuperSocket command pattern library which allow you to handle requests with commands.</Description>
-    <TargetFramework>net8.0</TargetFramework>
+    <Description>SuperSocket command pattern library which allow you to handle requests with commands.</Description>    
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="8.0.0" />
