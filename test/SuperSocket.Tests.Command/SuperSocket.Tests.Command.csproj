@@ -1,9 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>net7.0</TargetFrameworks>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="../../src/SuperSocket.Command/SuperSocket.Command.csproj" />
-  </ItemGroup>
-</Project>

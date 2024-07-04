@@ -12,3 +12,4 @@ _ReSharper.*
 *.snupkg
 test/SuperSocket.Benchmarks/BenchmarkDotNet.Artifacts
 e2e
+.idea
