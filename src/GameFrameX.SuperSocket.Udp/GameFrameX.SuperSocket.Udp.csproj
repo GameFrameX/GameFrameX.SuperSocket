@@ -1,11 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Description>SuperSocket UDP support library</Description>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GameFrameX.SuperSocket.Primitives\GameFrameX.SuperSocket.Primitives.csproj" />    
-    <ProjectReference Include="..\GameFrameX.SuperSocket.Connection\GameFrameX.SuperSocket.Connection.csproj" />
-    <ProjectReference Include="..\GameFrameX.SuperSocket.Server.Abstractions\GameFrameX.SuperSocket.Server.Abstractions.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <Description>SuperSocket UDP support library</Description>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>10.0</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\GameFrameX.SuperSocket.Primitives\GameFrameX.SuperSocket.Primitives.csproj"/>
+        <ProjectReference Include="..\GameFrameX.SuperSocket.Connection\GameFrameX.SuperSocket.Connection.csproj"/>
+        <ProjectReference Include="..\GameFrameX.SuperSocket.Server.Abstractions\GameFrameX.SuperSocket.Server.Abstractions.csproj"/>
+    </ItemGroup>
 </Project>

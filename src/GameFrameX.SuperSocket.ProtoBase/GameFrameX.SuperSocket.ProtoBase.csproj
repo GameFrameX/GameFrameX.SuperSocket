@@ -2,5 +2,8 @@
     <PropertyGroup>
         <Description>SuperSocket protocol decoding library.</Description>
         <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>10.0</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
     </PropertyGroup>
 </Project>

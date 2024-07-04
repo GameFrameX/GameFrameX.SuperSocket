@@ -3,10 +3,12 @@
     <PropertyGroup>
         <Description>Client Engine</Description>
         <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>10.0</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
     </PropertyGroup>
-
     <ItemGroup>
-        <ProjectReference Include="..\GameFrameX.SuperSocket.Server.Abstractions\GameFrameX.SuperSocket.Server.Abstractions.csproj"/>
+        <ProjectReference Include="..\GameFrameX.SuperSocket.Server.Abstractions\GameFrameX.SuperSocket.Server.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

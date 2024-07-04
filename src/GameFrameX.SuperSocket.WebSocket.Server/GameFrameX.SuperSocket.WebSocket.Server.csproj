@@ -2,6 +2,9 @@
     <PropertyGroup>
         <Description>SuperSocket WebSocket server.</Description>
         <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>10.0</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\GameFrameX.SuperSocket.Server\GameFrameX.SuperSocket.Server.csproj"/>
