@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>SuperSocket shared util classes for HTTP like protocol</Description>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameFrameX.SuperSocket.ProtoBase\GameFrameX.SuperSocket.ProtoBase.csproj" />

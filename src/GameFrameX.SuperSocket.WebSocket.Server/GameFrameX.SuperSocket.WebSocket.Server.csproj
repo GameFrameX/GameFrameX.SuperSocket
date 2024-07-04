@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>SuperSocket WebSocket server.</Description>        
+        <Description>SuperSocket WebSocket server.</Description>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\GameFrameX.SuperSocket.Server\GameFrameX.SuperSocket.Server.csproj" />
+        <ProjectReference Include="..\GameFrameX.SuperSocket.Server\GameFrameX.SuperSocket.Server.csproj"/>
         <ProjectReference Include="..\GameFrameX.SuperSocket.WebSocket\GameFrameX.SuperSocket.WebSocket.csproj"/>
         <ProjectReference Include="..\GameFrameX.SuperSocket.Primitives\GameFrameX.SuperSocket.Primitives.csproj"/>
         <ProjectReference Include="..\GameFrameX.SuperSocket.Command\GameFrameX.SuperSocket.Command.csproj"/>
