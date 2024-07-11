@@ -36,7 +36,7 @@ namespace GameFrameX.SuperSocket.Server
 
         public string SessionID { get; private set; }
 
-        public ValueTask SendAsync(byte[] data, CancellationToken cancellationToken = default)
+        public virtual ValueTask SendAsync(byte[] data, CancellationToken cancellationToken = default)
         {
             return _connection.SendAsync(data, cancellationToken);
         }

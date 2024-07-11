@@ -14,7 +14,10 @@ public class WebSocketSession : AppSession, IHandshakeRequiredSession
 
     public HttpHeader HttpHeader { get; internal set; }
 
-    public string Path => HttpHeader.Path;
+    public string Path
+    {
+        get { return HttpHeader.Path; }
+    }
 
     public string SubProtocol { get; internal set; }
 
@@ -36,31 +39,36 @@ public class WebSocketSession : AppSession, IHandshakeRequiredSession
     public virtual ValueTask SendAsync(string message, CancellationToken cancellationToken = default)
     {
         return SendAsync(new WebSocketPackage
-            {
-                OpCode = OpCode.Text,
-                Message = message
-            },
-            cancellationToken);
+                         {
+                             OpCode  = OpCode.Text,
+                             Message = message
+                         },
+                         cancellationToken);
     }
 
     public override ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         return SendAsync(new WebSocketPackage
-            {
-                OpCode = OpCode.Binary,
-                Data = new ReadOnlySequence<byte>(data)
-            },
-            cancellationToken);
+                         {
+                             OpCode = OpCode.Binary,
+                             Data   = new ReadOnlySequence<byte>(data)
+                         },
+                         cancellationToken);
+    }
+
+    public override ValueTask SendAsync(byte[] data, CancellationToken cancellationToken = default)
+    {
+        return SendAsync(new ReadOnlySequence<byte>(data), cancellationToken);
     }
 
     public virtual ValueTask SendAsync(ReadOnlySequence<byte> data, CancellationToken cancellationToken = default)
     {
         return SendAsync(new WebSocketPackage
-            {
-                OpCode = OpCode.Binary,
-                Data = data
-            },
-            cancellationToken);
+                         {
+                             OpCode = OpCode.Binary,
+                             Data   = data
+                         },
+                         cancellationToken);
     }
 
     public ValueTask CloseAsync(CloseReason reason, string reasonText = null, CancellationToken cancellationToken = default)
@@ -68,9 +76,9 @@ public class WebSocketSession : AppSession, IHandshakeRequiredSession
         var closeReasonCode = (short)reason;
 
         var closeStatus = new CloseStatus
-        {
-            Reason = reason
-        };
+                          {
+                              Reason = reason
+                          };
 
         var textEncodedLen = 0;
 
@@ -97,11 +105,11 @@ public class WebSocketSession : AppSession, IHandshakeRequiredSession
         OnCloseHandshakeStarted();
 
         return SendAsync(new WebSocketPackage
-            {
-                OpCode = OpCode.Close,
-                Data = new ReadOnlySequence<byte>(buffer, 0, length)
-            },
-            cancellationToken);
+                         {
+                             OpCode = OpCode.Close,
+                             Data   = new ReadOnlySequence<byte>(buffer, 0, length)
+                         },
+                         cancellationToken);
     }
 
     private void OnCloseHandshakeStarted()
