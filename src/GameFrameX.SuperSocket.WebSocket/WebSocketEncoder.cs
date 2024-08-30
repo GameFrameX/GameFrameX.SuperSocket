@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using GameFrameX.SuperSocket.ProtoBase;
 using GameFrameX.SuperSocket.WebSocket.Extensions;
@@ -239,35 +240,36 @@ namespace GameFrameX.SuperSocket.WebSocket
 
                 // writer should not be touched for now, because head has not been written yet.
                 encodingContext = CreateDataEncodingContext(null);
+                
+                var totalWritten = 0;
 
-                if (encoder != null)
+                Span<byte> bufferSpan = default;
+
+                var fragementSize = (text.Length > 0 ? encoder.GetByteCount(text, true) : 0) + unwrittenBytes.Count;
+
+                if (fragementSize == 0)
+                    fragementSize = _minEncodeBufferSize;
+
+                buffer = _bufferPool.Rent(fragementSize);
+
+                bufferSpan = buffer.AsSpan();
+
+                if (unwrittenBytes.Count > 0)
                 {
-                    var fragementSize = (text.Length > 0 ? encoder.GetByteCount(text, true) : 0) + unwrittenBytes.Count;
+                    unwrittenBytes.AsSpan().CopyTo(bufferSpan);
+                    totalWritten += unwrittenBytes.Count;
+                    OnDataEncoded(bufferSpan.Slice(0, unwrittenBytes.Count), encodingContext, 0);
+                }
 
-                    if (fragementSize == 0)
-                        fragementSize = _minEncodeBufferSize;
+                encoder.Convert(text, totalWritten == 0 ? bufferSpan : bufferSpan.Slice(totalWritten), true, out var charsUsed, out var bytesUsed, out bool completed);
 
-                    buffer = _bufferPool.Rent(fragementSize);
+                OnDataEncoded(bufferSpan.Slice(totalWritten, bytesUsed), encodingContext, totalWritten);
 
-                    bufferSpan = buffer.AsSpan();
+                totalWritten += bytesUsed;
 
-                    if (unwrittenBytes.Count > 0)
-                    {
-                        unwrittenBytes.AsSpan().CopyTo(bufferSpan);
-                        totalWritten += unwrittenBytes.Count;
-                        OnDataEncoded(bufferSpan.Slice(0, unwrittenBytes.Count), encodingContext, 0);
-                    }
-
-                    encoder.Convert(text, totalWritten == 0 ? bufferSpan : bufferSpan.Slice(totalWritten), true, out var charsUsed, out var bytesUsed, out bool completed);
-
-                    OnDataEncoded(bufferSpan.Slice(totalWritten, bytesUsed), encodingContext, totalWritten);
-
-                    totalWritten += bytesUsed;
-
-                    if (!completed || text.Length != charsUsed)
-                    {
-                        throw new ProtocolException("Unexpected encoding behavior: the text encoding didn't complete with enough buffer.");
-                    }
+                if (!completed || text.Length != charsUsed)
+                {
+                    throw new ProtocolException("Unexpected encoding behavior: the text encoding didn't complete with enough buffer.");
                 }
 
                 opCode = (byte)(opCode | 0x80);
