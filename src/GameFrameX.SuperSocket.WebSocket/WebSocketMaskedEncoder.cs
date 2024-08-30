@@ -40,7 +40,11 @@ namespace GameFrameX.SuperSocket.WebSocket
         protected override Span<byte> WriteHead(IBufferWriter<byte> writer, long length, out int headLen)
         {
             var head = base.WriteHead(writer, length, out headLen);
-            head[1] = (byte)(head[1] | 0x80);
+            
+            // We don't mask data for empty package
+            if (length > 0)
+                head[1] = (byte)(head[1] | 0x80);
+
             return head;
         }
 
