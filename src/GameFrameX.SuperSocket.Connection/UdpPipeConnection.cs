@@ -46,7 +46,9 @@ namespace GameFrameX.SuperSocket.Connection
 
                 foreach (var piece in buffer)
                 {
-                    total += await _socket.SendToAsync(GetArrayByMemory<byte>(piece), SocketFlags.None, RemoteEndPoint);
+                    total += await _socket
+                        .SendToAsync(GetArrayByMemory(piece), SocketFlags.None, RemoteEndPoint)
+                        .ConfigureAwait(false);
                 }
 
                 return total;
@@ -58,7 +60,10 @@ namespace GameFrameX.SuperSocket.Connection
             try
             {
                 MergeBuffer(ref buffer, destBuffer);
-                return await _socket.SendToAsync(new ArraySegment<byte>(destBuffer, 0, (int)buffer.Length), SocketFlags.None, RemoteEndPoint);
+
+                return await _socket
+                    .SendToAsync(new ArraySegment<byte>(destBuffer, 0, (int)buffer.Length), SocketFlags.None, RemoteEndPoint)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -92,28 +97,43 @@ namespace GameFrameX.SuperSocket.Connection
         {
             if (_enableSendingPipe)
             {
-                await base.SendAsync(buffer, cancellationToken);
+                await base
+                    .SendAsync(buffer, cancellationToken)
+                    .ConfigureAwait(false);
                 return;
             }
 
-            await SendOverIoAsync(new ReadOnlySequence<byte>(buffer), cancellationToken);
+            await SendOverIOAsync(new ReadOnlySequence<byte>(buffer), cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public override async ValueTask SendAsync<TPackage>(IPackageEncoder<TPackage> packageEncoder, TPackage package, CancellationToken cancellationToken = default)
         {
             if (_enableSendingPipe)
             {
-                await base.SendAsync(packageEncoder, package, cancellationToken);
+                await base
+                    .SendAsync(packageEncoder, package, cancellationToken)
+                    .ConfigureAwait(false);
+
                 return;
             }
 
             try
             {
-                await SendLock.WaitAsync(cancellationToken);
+                await SendLock
+                    .WaitAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
                 var writer = OutputWriter;
+
                 WritePackageWithEncoder<TPackage>(writer, packageEncoder, package);
-                await writer.FlushAsync(cancellationToken);
-                await ProcessOutputRead(Output.Reader);
+
+                await writer
+                    .FlushAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                await ProcessOutputRead(Output.Reader)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -125,7 +145,10 @@ namespace GameFrameX.SuperSocket.Connection
         {
             if (_enableSendingPipe)
             {
-                await base.SendAsync(write, cancellationToken);
+                await base
+                    .SendAsync(write, cancellationToken)
+                    .ConfigureAwait(false);
+                    
                 return;
             }
 

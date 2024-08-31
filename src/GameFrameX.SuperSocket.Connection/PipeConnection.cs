@@ -179,9 +179,9 @@ namespace GameFrameX.SuperSocket.Connection
 
         protected abstract ValueTask<int> SendOverIoAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken);
 
-        protected ArraySegment<T> GetArrayByMemory<T>(ReadOnlyMemory<T> memory)
+        protected internal ArraySegment<byte> GetArrayByMemory(ReadOnlyMemory<byte> memory)
         {
-            if (!MemoryMarshal.TryGetArray(memory, out var result))
+            if (!MemoryMarshal.TryGetArray<byte>(memory, out var result))
             {
                 throw new InvalidOperationException("Buffer backed by array was expected");
             }
