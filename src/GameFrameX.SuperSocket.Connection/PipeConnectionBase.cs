@@ -61,11 +61,11 @@ namespace GameFrameX.SuperSocket.Connection
             LastActiveTime = DateTimeOffset.Now;
         }
 
-        public override async IAsyncEnumerable<TPackageInfo> RunAsync<TPackageInfo>(IPipelineFilter<TPackageInfo> pipelineFilter)
+        public async override IAsyncEnumerable<TPackageInfo> RunAsync<TPackageInfo>(IPipelineFilter<TPackageInfo> pipelineFilter)
         {
             var packagePipe = !Options.ReadAsDemand
-                                  ? new DefaultObjectPipe<TPackageInfo>()
-                                  : new DefaultObjectPipeWithSupplyControl<TPackageInfo>();
+                ? new DefaultObjectPipe<TPackageInfo>()
+                : new DefaultObjectPipeWithSupplyControl<TPackageInfo>();
 
             _packagePipe = packagePipe;
             _pipelineFilter = pipelineFilter;
@@ -161,15 +161,19 @@ namespace GameFrameX.SuperSocket.Connection
 
         public override async ValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
+            var sendLockAcquired = false;
+
             try
             {
                 await SendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                sendLockAcquired = true;
                 WriteBuffer(OutputWriter, buffer);
                 await OutputWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                SendLock.Release();
+                if (sendLockAcquired)
+                    SendLock.Release();
             }
         }
 
@@ -181,29 +185,37 @@ namespace GameFrameX.SuperSocket.Connection
 
         public override async ValueTask SendAsync<TPackage>(IPackageEncoder<TPackage> packageEncoder, TPackage package, CancellationToken cancellationToken = default)
         {
+            var sendLockAcquired = false;
+
             try
             {
                 await SendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                sendLockAcquired = true;
                 WritePackageWithEncoder<TPackage>(OutputWriter, packageEncoder, package);
                 await OutputWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                SendLock.Release();
+                if (sendLockAcquired)
+                    SendLock.Release();
             }
         }
 
-        public override async ValueTask SendAsync(Action<PipeWriter> write, CancellationToken cancellationToken = default)
+        public override async ValueTask SendAsync(Action<PipeWriter> write, CancellationToken cancellationToken)
         {
+            var sendLockAcquired = false;
+
             try
             {
                 await SendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                sendLockAcquired = true;
                 write(OutputWriter);
                 await OutputWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                SendLock.Release();
+                if (sendLockAcquired)
+                    SendLock.Release();
             }
         }
 
@@ -287,13 +299,13 @@ namespace GameFrameX.SuperSocket.Connection
                 }
             }
 
-            await reader.CompleteAsync();
-            WriteEofPackage();
+            reader.Complete();
+            WriteEOFPackage();
         }
 
-        protected void WriteEofPackage()
+        protected void WriteEOFPackage()
         {
-            _packagePipe.WriteEOF();
+            _packagePipe.WirteEOF();
         }
 
         private bool ReaderBuffer<TPackageInfo>(ref ReadOnlySequence<byte> buffer, IPipelineFilter<TPackageInfo> pipelineFilter, IObjectPipe<TPackageInfo> packagePipe, out SequencePosition consumed, out SequencePosition examined, out IPipelineFilter<TPackageInfo> currentPipelineFilter)
@@ -318,6 +330,12 @@ namespace GameFrameX.SuperSocket.Connection
 
                 if (nextFilter != null)
                 {
+                    // ProxyProtocolPipelineFilter always is the first filter and its next filter is the actual first filter.
+                    if (bytesConsumedTotal == 0 && pipelineFilter is IProxyProtocolPipelineFilter proxyProtocolPipelineFilter)
+                    {
+                        ProxyInfo = proxyProtocolPipelineFilter.ProxyInfo;
+                    }
+
                     nextFilter.Context = pipelineFilter.Context; // pass through the context
                     _pipelineFilter = pipelineFilter = nextFilter;
                     filterSwitched = true;
