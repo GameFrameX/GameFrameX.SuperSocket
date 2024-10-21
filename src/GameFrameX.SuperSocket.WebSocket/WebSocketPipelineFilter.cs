@@ -1,8 +1,5 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
+﻿using System.Buffers;
 using System.Collections.Specialized;
-using System.IO;
 using System.Text;
 using GameFrameX.SuperSocket.ProtoBase;
 
@@ -17,6 +14,17 @@ namespace GameFrameX.SuperSocket.WebSocket
         private static readonly char _COLON = ':';
 
         private static readonly ReadOnlyMemory<byte> _headerTerminator = new byte[] { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
+
+        private readonly bool _requireMask = true;
+
+        public WebSocketPipelineFilter()
+        {
+        }
+
+        public WebSocketPipelineFilter(bool requireMask)
+        {
+            _requireMask = requireMask;
+        }
 
         public IPackageDecoder<WebSocketPackage> Decoder { get; set; }
 
@@ -33,7 +41,7 @@ namespace GameFrameX.SuperSocket.WebSocket
 
             var package = ParseHandshake(ref pack);
 
-            NextFilter = new WebSocketDataPipelineFilter(package.HttpHeader);
+            NextFilter = new WebSocketDataPipelineFilter(package.HttpHeader, _requireMask);
 
             return package;
         }
