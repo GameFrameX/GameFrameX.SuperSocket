@@ -151,11 +151,16 @@ namespace GameFrameX.SuperSocket.Connection
             return ReadPipeAsync(InputReader, packagePipe, cancellationToken);
         }
 
-        private void CheckConnectionOpen()
+        private void CheckConnectionSendAllowed()
         {
             if (this.IsClosed)
             {
                 throw new Exception("Channel is closed now, send is not allowed.");
+            }
+
+            if (_cts.IsCancellationRequested)
+            {
+                throw new Exception("The communication over this connection is being closed, send is not allowed.");
             }
         }
 
@@ -179,7 +184,7 @@ namespace GameFrameX.SuperSocket.Connection
 
         private void WriteBuffer(PipeWriter writer, ReadOnlyMemory<byte> buffer)
         {
-            CheckConnectionOpen();
+            CheckConnectionSendAllowed();
             writer.Write(buffer.Span);
         }
 
@@ -203,6 +208,8 @@ namespace GameFrameX.SuperSocket.Connection
 
         public override async ValueTask SendAsync(Action<PipeWriter> write, CancellationToken cancellationToken)
         {
+            CheckConnectionSendAllowed();
+            
             var sendLockAcquired = false;
 
             try
@@ -221,7 +228,7 @@ namespace GameFrameX.SuperSocket.Connection
 
         protected void WritePackageWithEncoder<TPackage>(IBufferWriter<byte> writer, IPackageEncoder<TPackage> packageEncoder, TPackage package)
         {
-            CheckConnectionOpen();
+            CheckConnectionSendAllowed();
             packageEncoder.Encode(writer, package);
         }
 
