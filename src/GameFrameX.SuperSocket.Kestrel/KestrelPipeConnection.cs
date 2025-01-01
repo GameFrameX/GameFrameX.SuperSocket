@@ -24,9 +24,28 @@ public class KestrelPipeConnection : PipeConnectionBase
         RemoteEndPoint = context.RemoteEndPoint;
     }
 
-    public override ValueTask DetachAsync()
+    protected override async ValueTask CompleteReaderAsync(PipeReader reader, bool isDetaching)
     {
-        throw new NotSupportedException($"Detach is not supported by {nameof(KestrelPipeConnection)}.");
+        if (!isDetaching)
+        {
+            await reader.CompleteAsync().ConfigureAwait(false);
+        }
+    }
+
+    protected override async ValueTask CompleteWriterAsync(PipeWriter writer, bool isDetaching)
+    {
+        if (!isDetaching)
+        {
+            await writer.CompleteAsync().ConfigureAwait(false);
+        }
+    }
+
+    protected override void OnClosed()
+    {
+        if (!CloseReason.HasValue)
+            CloseReason = Connection.CloseReason.RemoteClosing;
+
+        base.OnClosed();
     }
 
     protected override async void Close()
@@ -93,6 +112,6 @@ public class KestrelPipeConnection : PipeConnectionBase
 
     private void OnConnectionClosed()
     {
-        Cancel();
+        CancelAsync().Wait();
     }
 }

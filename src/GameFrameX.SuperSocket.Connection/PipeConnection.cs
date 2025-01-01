@@ -33,9 +33,9 @@ namespace GameFrameX.SuperSocket.Connection
             return connectionOptions.Output ?? new Pipe();
         }
 
-        protected override Task StartTask<TPackageInfo>(IObjectPipe<TPackageInfo> packagePipe)
+        protected override Task StartTask<TPackageInfo>(IObjectPipe<TPackageInfo> packagePipe, CancellationToken cancellationToken)
         {
-            var pipeTask = base.StartTask<TPackageInfo>(packagePipe);
+            var pipeTask = base.StartTask<TPackageInfo>(packagePipe, cancellationToken);
             return Task.WhenAll(pipeTask, ProcessSends());
         }
 
@@ -163,8 +163,8 @@ namespace GameFrameX.SuperSocket.Connection
                 }
                 catch (Exception e)
                 {
-                    // Cancel all the work in the channel if encounter an error during sending
-                    Cancel();
+                    // Cancel all the work in the connection if encounter an error during sending
+                    await CancelAsync().ConfigureAwait(false);
 
                     if (!IsIgnorableException(e))
                         OnError("Exception happened in SendAsync", e);
