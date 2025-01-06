@@ -1,5 +1,7 @@
 ﻿using System.Buffers;
 using System.Net.Sockets;
+using System.Buffers;
+using Microsoft.Extensions.ObjectPool;
 
 namespace GameFrameX.SuperSocket.Connection
 {
@@ -7,14 +9,16 @@ namespace GameFrameX.SuperSocket.Connection
     {
         private Socket _socket;
 
-        private List<ArraySegment<byte>> _segmentsForSend;
+        private readonly ObjectPool<SocketSender> _socketSenderPool;
 
-        public TcpPipeConnection(Socket socket, ConnectionOptions options)
+        public TcpPipeConnection(Socket socket, ConnectionOptions options, ObjectPool<SocketSender> socketSenderPool = null)
             : base(options)
         {
             _socket = socket;
             RemoteEndPoint = socket.RemoteEndPoint;
             LocalEndPoint = socket.LocalEndPoint;
+
+            _socketSenderPool = socketSenderPool;
         }
 
         protected override void OnClosed()
@@ -38,35 +42,26 @@ namespace GameFrameX.SuperSocket.Connection
 
         protected override async ValueTask<int> SendOverIoAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
         {
-            if (buffer.IsSingleSegment)
+            var socketSenderPool = _socketSenderPool;
+
+            var socketSender = socketSenderPool?.Get() ?? new SocketSender();
+
+            try
             {
-                return await _socket
-                    .SendAsync(GetArrayByMemory(buffer.First), SocketFlags.None, cancellationToken)
-                    .ConfigureAwait(false);
-            }
+                var sentBytes = await socketSender.SendAsync(_socket, buffer).ConfigureAwait(false);
 
-            if (_segmentsForSend == null)
+                if (socketSenderPool != null)
+                {
+                    socketSenderPool.Return(socketSender);
+                    socketSender = null;
+                }
+
+                return sentBytes;
+            }
+            finally
             {
-                _segmentsForSend = new List<ArraySegment<byte>>();
+                socketSender?.Dispose();
             }
-            else
-            {
-                _segmentsForSend.Clear();
-            }
-
-            var segments = _segmentsForSend;
-
-            foreach (var piece in buffer)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                _segmentsForSend.Add(GetArrayByMemory(piece));
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return await _socket
-                .SendAsync(_segmentsForSend, SocketFlags.None)
-                .ConfigureAwait(false);
         }
 
         protected override void Close()
