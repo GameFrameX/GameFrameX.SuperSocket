@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace SuperSocket.Server.Host
+namespace GameFrameX.SuperSocket.Server.Host
 {
     public class SuperSocketWebApplicationBuilder : IHostApplicationBuilder
     {

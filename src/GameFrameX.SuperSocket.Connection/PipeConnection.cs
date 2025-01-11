@@ -153,20 +153,12 @@ namespace GameFrameX.SuperSocket.Connection
             var buffer = result.Buffer;
             var end = buffer.End;
 
-            while (!buffer.IsEmpty)
+            if (!buffer.IsEmpty)
             {
                 try
                 {
-                    var bytesToSend = buffer.Length;
-                    var bytesSent = await SendOverIoAsync(buffer, CancellationToken.None).ConfigureAwait(false);
+                    await SendOverIoAsync(buffer, CancellationToken.None).ConfigureAwait(false);
                     UpdateLastActiveTime();
-
-                    if (bytesSent == bytesToSend)
-                    {
-                        break;
-                    }
-
-                    buffer = buffer.Slice(bytesSent);
                 }
                 catch (Exception e)
                 {
