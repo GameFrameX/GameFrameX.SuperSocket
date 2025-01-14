@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using GameFrameX.SuperSocket.Connection;
+using Microsoft.Extensions.ObjectPool;
 
 namespace GameFrameX.SuperSocket.Client
 {
@@ -54,6 +55,12 @@ namespace GameFrameX.SuperSocket.Client
         /// </summary>
         public static readonly ConnectState CancelledState = new ConnectState(false);
 
+        private static Lazy<ObjectPool<SocketSender>> _socketSenderPool = new Lazy<ObjectPool<SocketSender>>(() =>
+        {
+            var policy = new DefaultPooledObjectPolicy<SocketSender>();
+            var pool = new DefaultObjectPool<SocketSender>(policy, EasyClient.SocketSenderPoolSzie ?? EasyClient.DefaultSocketSenderPoolSzie);
+            return pool;
+        });
         /// <summary>
         /// 根据当前连接状态创建新的连接实例
         /// </summary>
@@ -70,7 +77,7 @@ namespace GameFrameX.SuperSocket.Client
             }
             else
             {
-                return new TcpPipeConnection(socket, connectionOptions);
+                return new TcpPipeConnection(socket, connectionOptions, _socketSenderPool.Value);
             }
         }
     }
