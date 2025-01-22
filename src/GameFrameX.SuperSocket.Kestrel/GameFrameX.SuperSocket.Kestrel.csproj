@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>SuperSocket Kestrel library</Description>
+        <Description>SuperSocket Kestrel library.GameFrameX 框架的基础设施框架库.框架文档主页: https://gameframex.doc.alianblank.com</Description>
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>10.0</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -29,6 +29,7 @@
         <Copyright>Kerry Jiang;AlianBlank;GameFrameX;Blank</Copyright>
         <Title>$(AssemblyName)</Title>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <AssemblyOriginatorKeyFile>../../gameframex.key.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\GameFrameX.SuperSocket.Connection\GameFrameX.SuperSocket.Connection.csproj"/>
