@@ -36,6 +36,12 @@
         <ProjectReference Include="..\GameFrameX.SuperSocket.Server.Abstractions\GameFrameX.SuperSocket.Server.Abstractions.csproj"/>
         <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <OutputPath>..\..\bin\app_debug</OutputPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <OutputPath>..\..\bin\app</OutputPath>
+    </PropertyGroup>
     <ItemGroup>
         <None Include="../../logo.png">
             <Pack>True</Pack>
