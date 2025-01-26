@@ -545,9 +545,11 @@ namespace GameFrameX.SuperSocket.Server
                         _logger.LogError(e, "Failed to stop the server");
                     }
 
-                    if (_connectionListeners.Any())
+                    var connectionListeners = _connectionListeners;
+
+                    if (connectionListeners != null && connectionListeners.Any())
                     {
-                        foreach (var listener in _connectionListeners)
+                        foreach (var listener in connectionListeners)
                         {
                             listener.Dispose();
                         }
