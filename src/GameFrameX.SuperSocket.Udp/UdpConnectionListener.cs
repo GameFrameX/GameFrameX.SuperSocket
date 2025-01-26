@@ -225,5 +225,15 @@ namespace GameFrameX.SuperSocket.Udp
         {
             return Options?.ToString();
         }
+
+        public void Dispose()
+        {
+            var listenSocket = _listenSocket;
+
+            if (listenSocket != null && Interlocked.CompareExchange(ref _listenSocket, null, listenSocket) == listenSocket)
+            {
+                listenSocket.Dispose();
+            }
+        } 
     }
 }

@@ -8,7 +8,7 @@ namespace GameFrameX.SuperSocket.Server.Abstractions.Connections
 {
     public delegate ValueTask NewConnectionAcceptHandler(ListenOptions listenOptions, IConnection connection);
 
-    public interface IConnectionListener
+    public interface IConnectionListener : IDisposable
     {
         ListenOptions Options { get; }
 
