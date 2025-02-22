@@ -255,8 +255,7 @@ namespace GameFrameX.SuperSocket.Connection
 
                 var buffer = result.Buffer;
 
-                SequencePosition consumed = buffer.Start;
-                SequencePosition examined = buffer.End;
+                SequencePosition consumed = buffer.End;
 
                 var completedOrCancelled = result.IsCompleted || result.IsCanceled;
 
@@ -266,6 +265,8 @@ namespace GameFrameX.SuperSocket.Connection
 
                     foreach (var bufferFilterResult in ReadBuffer(buffer, pipelineFilter))
                     {
+                        lastFilterResult = bufferFilterResult;
+
                         if (bufferFilterResult.Package != null)
                         {
                             yield return bufferFilterResult.Package;
@@ -278,8 +279,6 @@ namespace GameFrameX.SuperSocket.Connection
                             Close();
                             yield break;
                         }
-
-                        lastFilterResult = bufferFilterResult;
                     }
 
                     pipelineFilter = _pipelineFilter as IPipelineFilter<TPackageInfo>;
@@ -292,9 +291,13 @@ namespace GameFrameX.SuperSocket.Connection
                         Close();
                         completedOrCancelled = true;
                     }
+                    else
+                    {
+                        consumed = lastFilterResult.Consumed;
+                    }
                 }
 
-                reader.AdvanceTo(consumed, examined);
+                reader.AdvanceTo(consumed);
 
                 if (completedOrCancelled)
                 {
