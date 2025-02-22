@@ -9,7 +9,7 @@ namespace GameFrameX.SuperSocket.Connection
         {
         }
 
-        internal override Task FillPipeAsync(PipeWriter writer, ISupplyController supplyController, CancellationToken cancellationToken)
+        internal override Task FillPipeAsync(PipeWriter writer, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

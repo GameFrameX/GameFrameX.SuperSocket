@@ -10,7 +10,7 @@ namespace GameFrameX.SuperSocket.Connection
     {
         private Action<object> _continuation;
 
-        private static readonly Action<object?> _continuationCompleted = _ => { };
+        private static readonly Action<object> _continuationCompleted = _ => { };
 
         private List<ArraySegment<byte>> _bufferList;
 
