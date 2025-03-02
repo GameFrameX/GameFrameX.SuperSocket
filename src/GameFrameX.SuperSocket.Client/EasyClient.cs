@@ -30,6 +30,8 @@ namespace GameFrameX.SuperSocket.Client
 
         internal static readonly int DefaultSocketSenderPoolSize = 10;
 
+        private bool _continuousReceivingStarted = false;
+
         protected EasyClient()
             : this(NullLogger.Instance)
         {
@@ -215,7 +217,8 @@ namespace GameFrameX.SuperSocket.Client
                     return;
                 }
             }, this, TaskContinuationOptions.OnlyOnFaulted);
-            ;
+
+            _continuousReceivingStarted = true;
         }
 
         protected abstract Task StartReceiveAsync();
@@ -273,7 +276,17 @@ namespace GameFrameX.SuperSocket.Client
 
         public virtual async ValueTask CloseAsync()
         {
-            await Connection.CloseAsync(CloseReason.LocalClosing);
+            var closeTask = Connection.CloseAsync(CloseReason.LocalClosing);
+
+            if (_continuousReceivingStarted)
+            {
+                await closeTask;
+            }
+            else
+            {
+                await Task.WhenAll(closeTask.AsTask(), StartReceiveAsync());
+            }
+            
             OnClosed(this, EventArgs.Empty);
         }
     }
