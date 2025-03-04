@@ -158,7 +158,7 @@ namespace GameFrameX.SuperSocket.Connection
                 try
                 {
                     var bytesToSend = buffer.Length;
-                    var bytesSent = await SendOverIOAsync(buffer, CancellationToken.None).ConfigureAwait(false);
+                    var bytesSent = await SendOverIoAsync(buffer, CancellationToken.None).ConfigureAwait(false);
                     UpdateLastActiveTime();
 
                     if (bytesSent == bytesToSend)

@@ -2,6 +2,7 @@ using System.Net.Sockets;
 using GameFrameX.SuperSocket.Connection;
 using GameFrameX.SuperSocket.Server.Abstractions;
 using GameFrameX.SuperSocket.Server.Abstractions.Connections;
+using Microsoft.Extensions.ObjectPool;
 
 namespace GameFrameX.SuperSocket.Server.Connection
 {
