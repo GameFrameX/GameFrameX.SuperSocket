@@ -10,8 +10,15 @@ using Microsoft.Extensions.Hosting;
 
 namespace GameFrameX.SuperSocket.WebSocket.Server;
 
+/// <summary>
+/// WebSocket 主机构建器适配器
+/// </summary>
 internal class WebSocketHostBuilderAdapter : ServerHostBuilderAdapter<WebSocketPackage>
 {
+    /// <summary>
+    /// 初始化 WebSocket 主机构建器适配器的新实例
+    /// </summary>
+    /// <param name="hostBuilder">主机构建器</param>
     public WebSocketHostBuilderAdapter(IHostBuilder hostBuilder)
         : base(hostBuilder)
     {
@@ -21,6 +28,9 @@ internal class WebSocketHostBuilderAdapter : ServerHostBuilderAdapter<WebSocketP
         this.ConfigureSupplementServices(WebSocketHostBuilder.ValidateHostBuilder);
     }
 
+    /// <summary>
+    /// 注册默认服务
+    /// </summary>
     protected override void RegisterDefaultServices(HostBuilderContext builderContext, IServiceCollection servicesInHost, IServiceCollection services)
     {
         services.TryAddSingleton<ISessionFactory, GenericSessionFactory<WebSocketSession>>();
@@ -31,6 +41,9 @@ internal class WebSocketHostBuilderAdapter : ServerHostBuilderAdapter<WebSocketP
     }
 }
 
+/// <summary>
+/// WebSocket 主机构建器
+/// </summary>
 public class WebSocketHostBuilder : SuperSocketHostBuilder<WebSocketPackage>
 {
     internal WebSocketHostBuilder()

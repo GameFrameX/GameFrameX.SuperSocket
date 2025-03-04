@@ -6,14 +6,30 @@ using Microsoft.Extensions.Options;
 
 namespace GameFrameX.SuperSocket.WebSocket.Server;
 
+/// <summary>
+/// WebSocket 服务器中间件接口
+/// </summary>
 internal interface IWebSocketServerMiddleware
 {
+    /// <summary>
+    /// 获取打开握手等待队列长度
+    /// </summary>
     int OpenHandshakePendingQueueLength { get; }
 
+    /// <summary>
+    /// 获取关闭握手等待队列长度
+    /// </summary>
     int CloseHandshakePendingQueueLength { get; }
+
+    /// <summary>
+    /// 处理会话握手完成事件
+    /// </summary>
     ValueTask HandleSessionHandshakeCompleted(WebSocketSession session);
 }
 
+/// <summary>
+/// WebSocket 服务器中间件实现类
+/// </summary>
 internal class WebSocketServerMiddleware : MiddlewareBase, IWebSocketServerMiddleware
 {
     private readonly HandshakeOptions _options;

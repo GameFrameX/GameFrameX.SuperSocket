@@ -12,8 +12,14 @@ using Microsoft.Extensions.Options;
 
 namespace GameFrameX.SuperSocket.WebSocket.Server;
 
+/// <summary>
+/// WebSocket 服务器扩展方法
+/// </summary>
 public static class WebSocketServerExtensions
 {
+    /// <summary>
+    /// 使用 WebSocket 中间件
+    /// </summary>
     internal static ISuperSocketHostBuilder<WebSocketPackage> UseWebSocketMiddleware(this ISuperSocketHostBuilder<WebSocketPackage> builder)
     {
         return builder
@@ -22,6 +28,9 @@ public static class WebSocketServerExtensions
             as ISuperSocketHostBuilder<WebSocketPackage>;
     }
 
+    /// <summary>
+    /// 使用 WebSocket 消息处理器
+    /// </summary>
     public static ISuperSocketHostBuilder<WebSocketPackage> UseWebSocketMessageHandler(this ISuperSocketHostBuilder<WebSocketPackage> builder, Func<WebSocketSession, WebSocketPackage, ValueTask> handler)
     {
         return builder.ConfigureServices((ctx, services) => { services.AddSingleton<Func<WebSocketSession, WebSocketPackage, ValueTask>>(handler); }) as ISuperSocketHostBuilder<WebSocketPackage>;

@@ -15,8 +15,14 @@ using Microsoft.Extensions.Options;
 
 namespace GameFrameX.SuperSocket.WebSocket.Server;
 
+/// <summary>
+/// WebSocket 数据包处理器
+/// </summary>
 public class WebSocketPackageHandler : IPackageHandler<WebSocketPackage>
 {
+    /// <summary>
+    /// WebSocket 握手魔数
+    /// </summary>
     private const string _magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
     private static readonly Encoding _textEncoding = new UTF8Encoding(false);
