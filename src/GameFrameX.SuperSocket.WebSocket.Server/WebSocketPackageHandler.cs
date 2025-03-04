@@ -27,7 +27,9 @@ public class WebSocketPackageHandler : IPackageHandler<WebSocketPackage>
 
     private static readonly Encoding _textEncoding = new UTF8Encoding(false);
 
-    private static readonly IPackageEncoder<WebSocketPackage> _defaultMessageEncoder = new WebSocketEncoder();
+    private readonly Func<WebSocketEncoder> _websocketEncoderFactory;
+
+    private readonly Lazy<WebSocketEncoder> _defaultMessageEncoder;
 
     private readonly HandshakeOptions _handshakeOptions;
 
@@ -52,17 +54,21 @@ public class WebSocketPackageHandler : IPackageHandler<WebSocketPackage>
         _websocketServerMiddleware = serviceProvider.GetService<IWebSocketServerMiddleware>();
 
         _websocketCommandMiddleware = serviceProvider
-            .GetService<IWebSocketCommandMiddleware>() as IPackageHandler<WebSocketPackage>;
+                                          .GetService<IWebSocketCommandMiddleware>() as IPackageHandler<WebSocketPackage>;
 
         _subProtocolHandlers = serviceProvider.GetServices<ISubProtocolHandler>().ToDictionary(h => h.Name, StringComparer.OrdinalIgnoreCase);
 
         _extensionFactories = serviceProvider.GetServices<IWebSocketExtensionFactory>()
-            .GroupBy(f => f.Name)
-            .ToDictionary(g => g.Key, g => g.AsEnumerable(), StringComparer.OrdinalIgnoreCase);
+                                             .GroupBy(f => f.Name)
+                                             .ToDictionary(g => g.Key, g => g.AsEnumerable(), StringComparer.OrdinalIgnoreCase);
 
         _packageHandlerDelegate = serviceProvider.GetService<Func<WebSocketSession, WebSocketPackage, ValueTask>>();
         _logger = loggerFactory.CreateLogger<WebSocketPackageHandler>();
         _handshakeOptions = handshakeOptions.Value;
+        _websocketEncoderFactory = _serviceProvider.GetService<Func<WebSocketEncoder>>()
+                                   ?? (() => new WebSocketEncoder());
+
+        _defaultMessageEncoder = new Lazy<WebSocketEncoder>(_websocketEncoderFactory);
     }
 
     private CloseStatus GetCloseStatusFromPackage(WebSocketPackage package)
@@ -280,6 +286,18 @@ public class WebSocketPackageHandler : IPackageHandler<WebSocketPackage>
         return sb.ToString();
     }
 
+    private WebSocketEncoder GetWebSocketEncoder(IReadOnlyList<IWebSocketExtension> extensions)
+    {
+        if (extensions == null || !extensions.Any())
+        {
+            return _defaultMessageEncoder.Value;
+        }
+
+        var encoder = _websocketEncoderFactory.Invoke();
+        encoder.Extensions = extensions;
+        return encoder;
+    }
+
     private async ValueTask<bool> HandleHandshake(IAppSession session, WebSocketPackage p)
     {
         const string requiredVersion = "13";
@@ -320,15 +338,7 @@ public class WebSocketPackageHandler : IPackageHandler<WebSocketPackage>
             {
                 Extensions = extensions
             };
-
-            ws.MessageEncoder = new WebSocketEncoder
-            {
-                Extensions = extensions
-            };
-        }
-        else
-        {
-            ws.MessageEncoder = _defaultMessageEncoder;
+            ws.MessageEncoder = GetWebSocketEncoder(extensions);
         }
 
         var secKeyAccept = string.Empty;
