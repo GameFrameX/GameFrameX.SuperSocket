@@ -5,6 +5,9 @@ using GameFrameX.SuperSocket.ProtoBase;
 
 namespace GameFrameX.SuperSocket.WebSocket
 {
+    /// <summary>
+    /// WebSocket 管道过滤器
+    /// </summary>
     public class WebSocketPipelineFilter : IPipelineFilter<WebSocketPackage>
     {
         private static ReadOnlySpan<byte> _CRLF => new byte[] { (byte)'\r', (byte)'\n' };
