@@ -58,7 +58,7 @@ namespace GameFrameX.SuperSocket.Server
         {
             get
             {
-                if (_connection?.CloseReason.HasValue != null)
+                if (_connection?.CloseReason != null)
                 {
                     return false;
                 }
