@@ -30,7 +30,7 @@ namespace GameFrameX.SuperSocket.Connection
 
         protected override void Close()
         {
-            WriteEofPackage();
+            WriteEOFPackage();
         }
 
         protected override ValueTask<int> FillPipeWithDataAsync(Memory<byte> memory, CancellationToken cancellationToken)
@@ -103,7 +103,7 @@ namespace GameFrameX.SuperSocket.Connection
                 return;
             }
 
-            await SendOverIOAsync(new ReadOnlySequence<byte>(buffer), cancellationToken)
+            await SendOverIoAsync(new ReadOnlySequence<byte>(buffer), cancellationToken)
                 .ConfigureAwait(false);
         }
 

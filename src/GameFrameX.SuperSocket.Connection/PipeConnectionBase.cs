@@ -305,7 +305,7 @@ namespace GameFrameX.SuperSocket.Connection
 
         protected void WriteEOFPackage()
         {
-            _packagePipe.WirteEOF();
+            _packagePipe.WriteEOF();
         }
 
         private bool ReaderBuffer<TPackageInfo>(ref ReadOnlySequence<byte> buffer, IPipelineFilter<TPackageInfo> pipelineFilter, IObjectPipe<TPackageInfo> packagePipe, out SequencePosition consumed, out SequencePosition examined, out IPipelineFilter<TPackageInfo> currentPipelineFilter)
@@ -330,12 +330,6 @@ namespace GameFrameX.SuperSocket.Connection
 
                 if (nextFilter != null)
                 {
-                    // ProxyProtocolPipelineFilter always is the first filter and its next filter is the actual first filter.
-                    if (bytesConsumedTotal == 0 && pipelineFilter is IProxyProtocolPipelineFilter proxyProtocolPipelineFilter)
-                    {
-                        ProxyInfo = proxyProtocolPipelineFilter.ProxyInfo;
-                    }
-
                     nextFilter.Context = pipelineFilter.Context; // pass through the context
                     _pipelineFilter = pipelineFilter = nextFilter;
                     filterSwitched = true;
