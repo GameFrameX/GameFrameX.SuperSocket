@@ -12,7 +12,7 @@ namespace GameFrameX.SuperSocket.WebSocket
     {
         private static readonly Encoding _textEncoding = new UTF8Encoding(false);
 
-        private static readonly int _minEncodeBufferSize; 
+        private static readonly int _minEncodeBufferSize;
 
         private const int _size0 = 126;
         private const int _size1 = 65536;
@@ -22,18 +22,18 @@ namespace GameFrameX.SuperSocket.WebSocket
         private readonly ArrayPool<byte> _bufferPool;
 
         protected ArrayPool<byte> BufferPool => _bufferPool;
-        
+
         public IReadOnlyList<IWebSocketExtension> Extensions { get; set; }
 
-        private static int[] _defaultFragmentSizes = new int []
-            {
-                1024,
-                1024 * 4,
-                1024 * 8,
-                1024 * 16,
-                1024 * 32,
-                1024 * 64
-            };
+        private static int[] _defaultFragmentSizes = new int[]
+        {
+            1024,
+            1024 * 4,
+            1024 * 8,
+            1024 * 16,
+            1024 * 32,
+            1024 * 64
+        };
 
         static WebSocketEncoder()
         {
@@ -69,7 +69,7 @@ namespace GameFrameX.SuperSocket.WebSocket
             if (length < _size0)
             {
                 headLen = 2;
-                
+
                 var head = writer.GetSpan(headLen);
                 head[1] = (byte)length;
 
@@ -178,7 +178,7 @@ namespace GameFrameX.SuperSocket.WebSocket
                     }
 
                     bytesUsed = dataSizeToWrite;
-                }   
+                }
 
                 buffer = buffer[..bytesUsed];
 
@@ -230,7 +230,6 @@ namespace GameFrameX.SuperSocket.WebSocket
         private int EncodeFinalFragment(IBufferWriter<byte> writer, byte opCode, ReadOnlySpan<char> text, Encoder encoder, ArraySegment<byte> unwrittenBytes)
         {
             byte[] buffer = default;
-            Span<byte> bufferSpan = default;
 
             object encodingContext = default;
 
@@ -241,10 +240,8 @@ namespace GameFrameX.SuperSocket.WebSocket
                 // writer should not be touched for now, because head has not been written yet.
                 encodingContext = CreateDataEncodingContext(null);
                 
-                var totalWritten = 0;
-
                 Span<byte> bufferSpan = default;
-
+                
                 var fragementSize = (text.Length > 0 ? encoder.GetByteCount(text, true) : 0) + unwrittenBytes.Count;
 
                 if (fragementSize == 0)
@@ -289,7 +286,7 @@ namespace GameFrameX.SuperSocket.WebSocket
             {
                 if (buffer != null)
                     _bufferPool.Return(buffer);
-                
+
                 CleanupEncodingContext(encodingContext);
             }
         }
@@ -316,7 +313,7 @@ namespace GameFrameX.SuperSocket.WebSocket
             for (var i = _fragmentSizes.Length - 1; i >= 0; i--)
             {
                 var fragmentSize = _fragmentSizes[i];
-                
+
                 if (msgSize >= fragmentSize)
                 {
                     return fragmentSize;
@@ -325,7 +322,7 @@ namespace GameFrameX.SuperSocket.WebSocket
 
             return 0;
         }
-        
+
         public int Encode(IBufferWriter<byte> writer, WebSocketPackage pack)
         {
             pack.SaveOpCodeByte();
@@ -372,17 +369,17 @@ namespace GameFrameX.SuperSocket.WebSocket
                         if (unwritteBytes.Count > 0)
                             _bufferPool.Return(unwritteBytes.Array);
                     }
-                    
+
                     break;
                 }
 
                 total += EncodeFragment(writer, isContinuation ? (byte)OpCode.Continuation : pack.OpCodeByte, fragmentSize, text, encoder, ref unwritteBytes, out var charsUsed);
                 text = text.Slice(charsUsed);
-                
+
                 if (!isContinuation)
                     isContinuation = true;
             }
-            
+
             return total;
         }
     }
