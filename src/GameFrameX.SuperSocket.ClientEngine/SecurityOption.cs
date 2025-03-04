@@ -5,50 +5,61 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x02000015 RID: 21
+    /// <summary>
+    /// 安全选项类，用于配置SSL/TLS连接的安全参数
+    /// </summary>
     public class SecurityOption
     {
-        // Token: 0x17000025 RID: 37
-        // (get) Token: 0x060000B8 RID: 184 RVA: 0x000039B2 File Offset: 0x00001BB2
-        // (set) Token: 0x060000B9 RID: 185 RVA: 0x000039BA File Offset: 0x00001BBA
+        /// <summary>
+        /// 获取或设置启用的SSL协议版本
+        /// </summary>
         public SslProtocols EnabledSslProtocols { get; set; }
 
-        // Token: 0x17000026 RID: 38
-        // (get) Token: 0x060000BA RID: 186 RVA: 0x000039C3 File Offset: 0x00001BC3
-        // (set) Token: 0x060000BB RID: 187 RVA: 0x000039CB File Offset: 0x00001BCB
+        /// <summary>
+        /// 获取或设置X509证书集合
+        /// </summary>
         public X509CertificateCollection Certificates { get; set; }
 
-        // Token: 0x17000027 RID: 39
-        // (get) Token: 0x060000BC RID: 188 RVA: 0x000039D4 File Offset: 0x00001BD4
-        // (set) Token: 0x060000BD RID: 189 RVA: 0x000039DC File Offset: 0x00001BDC
+        /// <summary>
+        /// 获取或设置是否允许不受信任的证书
+        /// </summary>
         public bool AllowUnstrustedCertificate { get; set; }
 
-        // Token: 0x17000028 RID: 40
-        // (get) Token: 0x060000BE RID: 190 RVA: 0x000039E5 File Offset: 0x00001BE5
-        // (set) Token: 0x060000BF RID: 191 RVA: 0x000039ED File Offset: 0x00001BED
+        /// <summary>
+        /// 获取或设置是否允许证书名称不匹配
+        /// </summary>
         public bool AllowNameMismatchCertificate { get; set; }
 
-        // Token: 0x17000029 RID: 41
-        // (get) Token: 0x060000C0 RID: 192 RVA: 0x000039F6 File Offset: 0x00001BF6
-        // (set) Token: 0x060000C1 RID: 193 RVA: 0x000039FE File Offset: 0x00001BFE
+        /// <summary>
+        /// 获取或设置是否允许证书链错误
+        /// </summary>
         public bool AllowCertificateChainErrors { get; set; }
 
-        // Token: 0x1700002A RID: 42
-        // (get) Token: 0x060000C2 RID: 194 RVA: 0x00003A07 File Offset: 0x00001C07
-        // (set) Token: 0x060000C3 RID: 195 RVA: 0x00003A0F File Offset: 0x00001C0F
+        /// <summary>
+        /// 获取或设置网络凭据
+        /// </summary>
         public NetworkCredential Credential { get; set; }
 
-        // Token: 0x060000C4 RID: 196 RVA: 0x00003A18 File Offset: 0x00001C18
+        /// <summary>
+        /// 使用默认协议初始化安全选项的构造函数
+        /// </summary>
         public SecurityOption() : this(SecurityOption.GetDefaultProtocol(), new X509CertificateCollection())
         {
         }
 
-        // Token: 0x060000C5 RID: 197 RVA: 0x00003A2A File Offset: 0x00001C2A
+        /// <summary>
+        /// 使用指定的SSL协议初始化安全选项的构造函数
+        /// </summary>
+        /// <param name="enabledSslProtocols">启用的SSL协议版本</param>
         public SecurityOption(SslProtocols enabledSslProtocols) : this(enabledSslProtocols, new X509CertificateCollection())
         {
         }
 
-        // Token: 0x060000C6 RID: 198 RVA: 0x00003A38 File Offset: 0x00001C38
+        /// <summary>
+        /// 使用指定的SSL协议和证书初始化安全选项的构造函数
+        /// </summary>
+        /// <param name="enabledSslProtocols">启用的SSL协议版本</param>
+        /// <param name="certificate">X509证书</param>
         public SecurityOption(SslProtocols enabledSslProtocols, X509Certificate certificate) : this(enabledSslProtocols, new X509CertificateCollection(new X509Certificate[]
         {
             certificate
@@ -56,20 +67,30 @@ namespace GameFrameX.SuperSocket.ClientEngine
         {
         }
 
-        // Token: 0x060000C7 RID: 199 RVA: 0x00003A50 File Offset: 0x00001C50
+        /// <summary>
+        /// 使用指定的SSL协议和证书集合初始化安全选项的构造函数
+        /// </summary>
+        /// <param name="enabledSslProtocols">启用的SSL协议版本</param>
+        /// <param name="certificates">X509证书集合</param>
         public SecurityOption(SslProtocols enabledSslProtocols, X509CertificateCollection certificates)
         {
             this.EnabledSslProtocols = enabledSslProtocols;
             this.Certificates = certificates;
         }
 
-        // Token: 0x060000C8 RID: 200 RVA: 0x00003A66 File Offset: 0x00001C66
+        /// <summary>
+        /// 使用网络凭据初始化安全选项的构造函数
+        /// </summary>
+        /// <param name="credential">网络凭据</param>
         public SecurityOption(NetworkCredential credential)
         {
             this.Credential = credential;
         }
 
-        // Token: 0x060000C9 RID: 201 RVA: 0x00003A75 File Offset: 0x00001C75
+        /// <summary>
+        /// 获取默认的SSL协议版本
+        /// </summary>
+        /// <returns>返回TLS1.2和TLS1.3的组合</returns>
         private static SslProtocols GetDefaultProtocol()
         {
             return SslProtocols.Tls12 | SslProtocols.Tls13;

@@ -6,67 +6,94 @@ using GameFrameX.SuperSocket.Server.Abstractions.Session;
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x02000013 RID: 19
+    /// <summary>
+    /// 客户端会话接口
+    /// </summary>
     public interface IClientSession : IGameAppSession
     {
-        // Token: 0x17000020 RID: 32
-        // (get) Token: 0x0600009F RID: 159
+        /// <summary>
+        /// 获取底层Socket对象
+        /// </summary>
         Socket Socket { get; }
 
-        // Token: 0x17000021 RID: 33
-        // (get) Token: 0x060000A0 RID: 160
-        // (set) Token: 0x060000A1 RID: 161
+        /// <summary>
+        /// 获取或设置代理连接器
+        /// </summary>
         IProxyConnector Proxy { get; set; }
 
-        // Token: 0x17000022 RID: 34
-        // (get) Token: 0x060000A2 RID: 162
-        // (set) Token: 0x060000A3 RID: 163
+        /// <summary>
+        /// 获取或设置接收缓冲区大小
+        /// </summary>
         int ReceiveBufferSize { get; set; }
 
-        // Token: 0x17000023 RID: 35
-        // (get) Token: 0x060000A4 RID: 164
-        // (set) Token: 0x060000A5 RID: 165
+        /// <summary>
+        /// 获取或设置发送队列大小
+        /// </summary>
         int SendingQueueSize { get; set; }
 
-        // Token: 0x060000A7 RID: 167
+        /// <summary>
+        /// 连接到远程终结点
+        /// </summary>
+        /// <param name="remoteEndPoint">远程终结点</param>
         void Connect(EndPoint remoteEndPoint);
 
-        // Token: 0x060000A8 RID: 168
+        /// <summary>
+        /// 发送数据片段
+        /// </summary>
+        /// <param name="segment">要发送的数据片段</param>
         void Send(ArraySegment<byte> segment);
 
-        // Token: 0x060000A9 RID: 169
+        /// <summary>
+        /// 发送多个数据片段
+        /// </summary>
+        /// <param name="segments">要发送的数据片段列表</param>
         void Send(IList<ArraySegment<byte>> segments);
 
-        // Token: 0x060000AA RID: 170
+        /// <summary>
+        /// 发送字节数组数据
+        /// </summary>
+        /// <param name="data">要发送的数据</param>
+        /// <param name="offset">起始偏移量</param>
+        /// <param name="length">发送长度</param>
         void Send(byte[] data, int offset, int length);
 
-        // Token: 0x060000AB RID: 171
+        /// <summary>
+        /// 尝试发送数据片段
+        /// </summary>
+        /// <param name="segment">要发送的数据片段</param>
+        /// <returns>发送是否成功</returns>
         bool TrySend(ArraySegment<byte> segment);
 
-        // Token: 0x060000AC RID: 172
+        /// <summary>
+        /// 尝试发送多个数据片段
+        /// </summary>
+        /// <param name="segments">要发送的数据片段列表</param>
+        /// <returns>发送是否成功</returns>
         bool TrySend(IList<ArraySegment<byte>> segments);
 
-        // Token: 0x060000AD RID: 173
+        /// <summary>
+        /// 关闭连接
+        /// </summary>
         void Close();
 
-        // Token: 0x14000006 RID: 6
-        // (add) Token: 0x060000AE RID: 174
-        // (remove) Token: 0x060000AF RID: 175
+        /// <summary>
+        /// 连接成功事件
+        /// </summary>
         event EventHandler Connected;
 
-        // Token: 0x14000007 RID: 7
-        // (add) Token: 0x060000B0 RID: 176
-        // (remove) Token: 0x060000B1 RID: 177
+        /// <summary>
+        /// 连接关闭事件
+        /// </summary>
         event EventHandler Closed;
 
-        // Token: 0x14000008 RID: 8
-        // (add) Token: 0x060000B2 RID: 178
-        // (remove) Token: 0x060000B3 RID: 179
+        /// <summary>
+        /// 错误发生事件
+        /// </summary>
         event EventHandler<ErrorEventArgs> Error;
 
-        // Token: 0x14000009 RID: 9
-        // (add) Token: 0x060000B4 RID: 180
-        // (remove) Token: 0x060000B5 RID: 181
+        /// <summary>
+        /// 数据接收事件
+        /// </summary>
         event EventHandler<DataEventArgs> DataReceived;
     }
 }

@@ -4,30 +4,49 @@ using System.Threading;
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x02000003 RID: 3
+    /// <summary>
+    /// 并发批处理队列类
+    /// </summary>
+    /// <typeparam name="T">队列中元素的类型</typeparam>
     public class ConcurrentBatchQueue<T> : IBatchQueue<T>
     {
-        // Token: 0x06000015 RID: 21 RVA: 0x00002821 File Offset: 0x00000A21
+        /// <summary>
+        /// 使用默认容量16初始化并发批处理队列的新实例
+        /// </summary>
         public ConcurrentBatchQueue() : this(16)
         {
         }
 
-        // Token: 0x06000016 RID: 22 RVA: 0x0000282B File Offset: 0x00000A2B
+        /// <summary>
+        /// 使用指定容量初始化并发批处理队列的新实例
+        /// </summary>
+        /// <param name="capacity">队列的初始容量</param>
         public ConcurrentBatchQueue(int capacity) : this(new T[capacity])
         {
         }
 
-        // Token: 0x06000017 RID: 23 RVA: 0x00002839 File Offset: 0x00000A39
+        /// <summary>
+        /// 使用指定容量和空值验证器初始化并发批处理队列的新实例
+        /// </summary>
+        /// <param name="capacity">队列的初始容量</param>
+        /// <param name="nullValidator">用于验证元素是否为空的函数</param>
         public ConcurrentBatchQueue(int capacity, Func<T, bool> nullValidator) : this(new T[capacity], nullValidator)
         {
         }
 
-        // Token: 0x06000018 RID: 24 RVA: 0x00002848 File Offset: 0x00000A48
+        /// <summary>
+        /// 使用指定数组初始化并发批处理队列的新实例
+        /// </summary>
+        /// <param name="array">用于存储队列元素的数组</param>
         public ConcurrentBatchQueue(T[] array) : this(array, (T t) => t == null)
         {
         }
 
-        // Token: 0x06000019 RID: 25 RVA: 0x00002870 File Offset: 0x00000A70
+        /// <summary>
+        /// 使用指定数组和空值验证器初始化并发批处理队列的新实例
+        /// </summary>
+        /// <param name="array">用于存储队列元素的数组</param>
+        /// <param name="nullValidator">用于验证元素是否为空的函数</param>
         public ConcurrentBatchQueue(T[] array, Func<T, bool> nullValidator)
         {
             this.m_Entity = new ConcurrentBatchQueue<T>.Entity
@@ -39,7 +58,11 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.m_NullValidator = nullValidator;
         }
 
-        // Token: 0x0600001A RID: 26 RVA: 0x000028BC File Offset: 0x00000ABC
+        /// <summary>
+        /// 将元素添加到队列中
+        /// </summary>
+        /// <param name="item">要添加的元素</param>
+        /// <returns>如果添加成功返回true，队列已满返回false</returns>
         public bool Enqueue(T item)
         {
             bool flag;
@@ -50,7 +73,12 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return !flag;
         }
 
-        // Token: 0x0600001B RID: 27 RVA: 0x000028DC File Offset: 0x00000ADC
+        /// <summary>
+        /// 尝试将元素添加到队列中
+        /// </summary>
+        /// <param name="item">要添加的元素</param>
+        /// <param name="full">输出参数，指示队列是否已满</param>
+        /// <returns>如果添加成功返回true，否则返回false</returns>
         private bool TryEnqueue(T item, out bool full)
         {
             full = false;
@@ -77,7 +105,11 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return true;
         }
 
-        // Token: 0x0600001C RID: 28 RVA: 0x0000293C File Offset: 0x00000B3C
+        /// <summary>
+        /// 将元素集合添加到队列中
+        /// </summary>
+        /// <param name="items">要添加的元素集合</param>
+        /// <returns>如果添加成功返回true，队列已满返回false</returns>
         public bool Enqueue(IList<T> items)
         {
             bool flag;
@@ -88,7 +120,12 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return !flag;
         }
 
-        // Token: 0x0600001D RID: 29 RVA: 0x0000295C File Offset: 0x00000B5C
+        /// <summary>
+        /// 尝试将元素集合添加到队列中
+        /// </summary>
+        /// <param name="items">要添加的元素集合</param>
+        /// <param name="full">输出参数，指示队列是否已满</param>
+        /// <returns>如果添加成功返回true，否则返回false</returns>
         private bool TryEnqueue(IList<T> items, out bool full)
         {
             full = false;
@@ -121,7 +158,11 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return true;
         }
 
-        // Token: 0x0600001E RID: 30 RVA: 0x00002A04 File Offset: 0x00000C04
+        /// <summary>
+        /// 尝试从队列中移除并返回元素集合
+        /// </summary>
+        /// <param name="outputItems">用于存储移除元素的集合</param>
+        /// <returns>如果成功移除元素返回true，队列为空返回false</returns>
         public bool TryDequeue(IList<T> outputItems)
         {
             ConcurrentBatchQueue<T>.Entity entity = this.m_Entity as ConcurrentBatchQueue<T>.Entity;
@@ -164,41 +205,55 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return true;
         }
 
-        // Token: 0x17000006 RID: 6
-        // (get) Token: 0x0600001F RID: 31 RVA: 0x00002ABC File Offset: 0x00000CBC
+        /// <summary>
+        /// 获取队列是否为空
+        /// </summary>
         public bool IsEmpty
         {
             get { return this.Count <= 0; }
         }
 
-        // Token: 0x17000007 RID: 7
-        // (get) Token: 0x06000020 RID: 32 RVA: 0x00002ACA File Offset: 0x00000CCA
+        /// <summary>
+        /// 获取队列中的元素数量
+        /// </summary>
         public int Count
         {
             get { return ((ConcurrentBatchQueue<T>.Entity)this.m_Entity).Count; }
         }
 
-        // Token: 0x04000006 RID: 6
+        /// <summary>
+        /// 当前实体对象
+        /// </summary>
         private object m_Entity;
 
-        // Token: 0x04000007 RID: 7
+        /// <summary>
+        /// 备用实体对象
+        /// </summary>
         private ConcurrentBatchQueue<T>.Entity m_BackEntity;
 
-        // Token: 0x04000008 RID: 8
+        /// <summary>
+        /// 空值
+        /// </summary>
         private static readonly T m_Null = default;
 
-        // Token: 0x04000009 RID: 9
+        /// <summary>
+        /// 空值验证器
+        /// </summary>
         private Func<T, bool> m_NullValidator;
 
-        // Token: 0x0200001F RID: 31
+        /// <summary>
+        /// 实体类，用于存储队列数据
+        /// </summary>
         private class Entity
         {
-            // Token: 0x17000034 RID: 52
-            // (get) Token: 0x06000123 RID: 291 RVA: 0x000053B9 File Offset: 0x000035B9
-            // (set) Token: 0x06000124 RID: 292 RVA: 0x000053C1 File Offset: 0x000035C1
+            /// <summary>
+            /// 获取或设置数据数组
+            /// </summary>
             public T[] Array { get; set; }
 
-            // Token: 0x04000046 RID: 70
+            /// <summary>
+            /// 元素数量
+            /// </summary>
             public int Count;
         }
     }

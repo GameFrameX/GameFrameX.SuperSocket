@@ -6,22 +6,27 @@ using System.Threading;
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x02000017 RID: 23
+    /// <summary>
+    /// TCP客户端会话的抽象基类
+    /// </summary>
     public abstract class TcpClientSession : ClientSession
     {
-        // Token: 0x1700002B RID: 43
-        // (get) Token: 0x060000CE RID: 206 RVA: 0x00003C01 File Offset: 0x00001E01
-        // (set) Token: 0x060000CF RID: 207 RVA: 0x00003C09 File Offset: 0x00001E09
+        /// <summary>
+        /// 获取或设置主机名
+        /// </summary>
         protected string HostName { get; private set; }
 
-        // Token: 0x060000D0 RID: 208 RVA: 0x00003C12 File Offset: 0x00001E12
+        /// <summary>
+        /// 初始化TCP客户端会话
+        /// </summary>
         public TcpClientSession()
         {
         }
 
-        // Token: 0x1700002C RID: 44
-        // (get) Token: 0x060000D1 RID: 209 RVA: 0x00003C1A File Offset: 0x00001E1A
-        // (set) Token: 0x060000D2 RID: 210 RVA: 0x00003C22 File Offset: 0x00001E22
+        /// <summary>
+        /// 获取或设置本地终结点
+        /// </summary>
+        /// <exception cref="Exception">当连接已启动或已连接时,不能设置本地终结点</exception>
         public override EndPoint LocalEndPoint
         {
             get { return base.LocalEndPoint; }
@@ -36,9 +41,10 @@ namespace GameFrameX.SuperSocket.ClientEngine
             }
         }
 
-        // Token: 0x1700002D RID: 45
-        // (get) Token: 0x060000D3 RID: 211 RVA: 0x00003C46 File Offset: 0x00001E46
-        // (set) Token: 0x060000D4 RID: 212 RVA: 0x00003C50 File Offset: 0x00001E50
+        /// <summary>
+        /// 获取或设置接收缓冲区大小
+        /// </summary>
+        /// <exception cref="Exception">当socket已连接时,不能设置接收缓冲区大小</exception>
         public override int ReceiveBufferSize
         {
             get { return base.ReceiveBufferSize; }
@@ -53,22 +59,39 @@ namespace GameFrameX.SuperSocket.ClientEngine
             }
         }
 
-        // Token: 0x060000D5 RID: 213 RVA: 0x00003C7F File Offset: 0x00001E7F
+        /// <summary>
+        /// 判断异常是否可以忽略
+        /// </summary>
+        /// <param name="e">要判断的异常</param>
+        /// <returns>如果是ObjectDisposedException或NullReferenceException返回true,否则返回false</returns>
         protected virtual bool IsIgnorableException(Exception e)
         {
             return e is ObjectDisposedException || e is NullReferenceException;
         }
 
-        // Token: 0x060000D6 RID: 214 RVA: 0x00003C96 File Offset: 0x00001E96
+        /// <summary>
+        /// 判断Socket错误码是否可以忽略
+        /// </summary>
+        /// <param name="errorCode">Socket错误码</param>
+        /// <returns>如果是指定的错误码返回true,否则返回false</returns>
         protected bool IsIgnorableSocketError(int errorCode)
         {
             return errorCode == 10058 || errorCode == 10053 || errorCode == 10054 || errorCode == 995;
         }
 
-        // Token: 0x060000D7 RID: 215
+        /// <summary>
+        /// Socket事件参数完成时的处理方法
+        /// </summary>
+        /// <param name="sender">事件源</param>
+        /// <param name="e">Socket异步事件参数</param>
         protected abstract void SocketEventArgsCompleted(object sender, SocketAsyncEventArgs e);
 
-        // Token: 0x060000D8 RID: 216 RVA: 0x00003CBC File Offset: 0x00001EBC
+        /// <summary>
+        /// 连接到远程终结点
+        /// </summary>
+        /// <param name="remoteEndPoint">远程终结点</param>
+        /// <exception cref="ArgumentNullException">remoteEndPoint为null时抛出</exception>
+        /// <exception cref="Exception">当正在连接或已经连接时抛出</exception>
         public override void Connect(EndPoint remoteEndPoint)
         {
             if (remoteEndPoint == null)
@@ -108,7 +131,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             remoteEndPoint.ConnectAsync(this.LocalEndPoint, new ConnectedCallback(this.ProcessConnect), null);
         }
 
-        // Token: 0x060000D9 RID: 217 RVA: 0x00003D70 File Offset: 0x00001F70
+        /// <summary>
+        /// 代理完成事件处理
+        /// </summary>
         private void Proxy_Completed(object sender, ProxyEventArgs e)
         {
             base.Proxy.Completed -= this.Proxy_Completed;
@@ -129,7 +154,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.m_InConnecting = false;
         }
 
-        // Token: 0x060000DA RID: 218 RVA: 0x00003DEC File Offset: 0x00001FEC
+        /// <summary>
+        /// 处理连接结果
+        /// </summary>
         protected void ProcessConnect(Socket socket, object state, SocketAsyncEventArgs e, Exception exception)
         {
             if (exception != null)
@@ -204,7 +231,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.OnGetSocket(e);
         }
 
-        // Token: 0x060000DB RID: 219 RVA: 0x00003F34 File Offset: 0x00002134
+        /// <summary>
+        /// 获取终结点的主机名
+        /// </summary>
         private string GetHostOfEndPoint(EndPoint endPoint)
         {
             DnsEndPoint dnsEndPoint = endPoint as DnsEndPoint;
@@ -222,16 +251,22 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return string.Empty;
         }
 
-        // Token: 0x060000DC RID: 220
+        /// <summary>
+        /// 获取Socket时的处理方法
+        /// </summary>
         protected abstract void OnGetSocket(SocketAsyncEventArgs e);
 
-        // Token: 0x060000DD RID: 221 RVA: 0x00003F75 File Offset: 0x00002175
+        /// <summary>
+        /// 确保Socket已关闭
+        /// </summary>
         protected bool EnsureSocketClosed()
         {
             return this.EnsureSocketClosed(null);
         }
 
-        // Token: 0x060000DE RID: 222 RVA: 0x00003F80 File Offset: 0x00002180
+        /// <summary>
+        /// 确保指定的Socket已关闭
+        /// </summary>
         protected bool EnsureSocketClosed(Socket prevClient)
         {
             Socket socket = base.Client;
@@ -273,7 +308,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return result;
         }
 
-        // Token: 0x060000DF RID: 223 RVA: 0x00003FFC File Offset: 0x000021FC
+        /// <summary>
+        /// 检测是否已连接
+        /// </summary>
         private bool DetectConnected()
         {
             if (base.Client != null)
@@ -285,7 +322,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return false;
         }
 
-        // Token: 0x060000E0 RID: 224 RVA: 0x0000401C File Offset: 0x0000221C
+        /// <summary>
+        /// 获取发送队列
+        /// </summary>
         private IBatchQueue<ArraySegment<byte>> GetSendingQueue()
         {
             if (this.m_SendingQueue != null)
@@ -310,7 +349,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return sendingQueue;
         }
 
-        // Token: 0x060000E1 RID: 225 RVA: 0x000040B4 File Offset: 0x000022B4
+        /// <summary>
+        /// 获取发送项列表
+        /// </summary>
         private PosList<ArraySegment<byte>> GetSendingItems()
         {
             if (this.m_SendingItems == null)
@@ -321,14 +362,19 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return this.m_SendingItems;
         }
 
-        // Token: 0x1700002E RID: 46
-        // (get) Token: 0x060000E2 RID: 226 RVA: 0x000040CF File Offset: 0x000022CF
+        /// <summary>
+        /// 获取是否正在发送数据
+        /// </summary>
         protected bool IsSending
         {
             get { return this.m_IsSending == 1; }
         }
 
-        // Token: 0x060000E3 RID: 227 RVA: 0x000040DC File Offset: 0x000022DC
+        /// <summary>
+        /// 尝试发送数据
+        /// </summary>
+        /// <param name="segment">要发送的数据段</param>
+        /// <returns>如果成功加入发送队列返回true,否则返回false</returns>
         public override bool TrySend(ArraySegment<byte> segment)
         {
             if (segment.Array == null || segment.Count == 0)
@@ -351,7 +397,11 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return result;
         }
 
-        // Token: 0x060000E4 RID: 228 RVA: 0x00004138 File Offset: 0x00002338
+        /// <summary>
+        /// 尝试发送多个数据段
+        /// </summary>
+        /// <param name="segments">要发送的数据段列表</param>
+        /// <returns>如果成功加入发送队列返回true,否则返回false</returns>
         public override bool TrySend(IList<ArraySegment<byte>> segments)
         {
             if (segments == null || segments.Count == 0)
@@ -382,7 +432,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return result;
         }
 
-        // Token: 0x060000E5 RID: 229 RVA: 0x000041B8 File Offset: 0x000023B8
+        /// <summary>
+        /// 从发送队列中取出数据并发送
+        /// </summary>
         private void DequeueSend()
         {
             PosList<ArraySegment<byte>> sendingItems = this.GetSendingItems();
@@ -395,10 +447,15 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.SendInternal(sendingItems);
         }
 
-        // Token: 0x060000E6 RID: 230
+        /// <summary>
+        /// 内部发送数据的方法
+        /// </summary>
+        /// <param name="items">要发送的数据项列表</param>
         protected abstract void SendInternal(PosList<ArraySegment<byte>> items);
 
-        // Token: 0x060000E7 RID: 231 RVA: 0x000041EC File Offset: 0x000023EC
+        /// <summary>
+        /// 发送完成时的处理方法
+        /// </summary>
         protected void OnSendingCompleted()
         {
             PosList<ArraySegment<byte>> sendingItems = this.GetSendingItems();
@@ -413,7 +470,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.SendInternal(sendingItems);
         }
 
-        // Token: 0x060000E8 RID: 232 RVA: 0x0000422A File Offset: 0x0000242A
+        /// <summary>
+        /// 关闭连接
+        /// </summary>
         public override void Close()
         {
             if (this.EnsureSocketClosed())
@@ -422,21 +481,20 @@ namespace GameFrameX.SuperSocket.ClientEngine
             }
         }
 
-        // Token: 0x0400002F RID: 47
         private bool m_InConnecting;
 
+        /// <summary>
+        /// 获取是否正在连接中
+        /// </summary>
         public bool IsInConnecting
         {
             get { return this.m_InConnecting; }
         }
 
-        // Token: 0x04000030 RID: 48
         private IBatchQueue<ArraySegment<byte>> m_SendingQueue;
 
-        // Token: 0x04000031 RID: 49
         private PosList<ArraySegment<byte>> m_SendingItems;
 
-        // Token: 0x04000032 RID: 50
         private int m_IsSending;
     }
 }

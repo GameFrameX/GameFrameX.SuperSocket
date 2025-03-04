@@ -2,15 +2,23 @@
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x02000011 RID: 17
+    /// <summary>
+    /// 错误事件参数类
+    /// </summary>
     public class ErrorEventArgs : EventArgs
     {
-        // Token: 0x1700001F RID: 31
-        // (get) Token: 0x0600009B RID: 155 RVA: 0x00003911 File Offset: 0x00001B11
-        // (set) Token: 0x0600009C RID: 156 RVA: 0x00003919 File Offset: 0x00001B19
+        /// <summary>
+        /// 获取或设置异常对象
+        /// </summary>
+        /// <value>
+        /// 包含错误详细信息的异常对象
+        /// </value>
         public Exception Exception { get; private set; }
 
-        // Token: 0x0600009D RID: 157 RVA: 0x00003922 File Offset: 0x00001B22
+        /// <summary>
+        /// 初始化 <see cref="ErrorEventArgs"/> 类的新实例
+        /// </summary>
+        /// <param name="exception">要封装的异常对象</param>
         public ErrorEventArgs(Exception exception)
         {
             this.Exception = exception;

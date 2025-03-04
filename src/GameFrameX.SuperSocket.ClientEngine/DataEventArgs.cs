@@ -2,22 +2,27 @@
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x02000010 RID: 16
+    /// <summary>
+    /// 数据事件参数类，用于处理数据传输相关的事件
+    /// </summary>
     public class DataEventArgs : EventArgs
     {
-        // Token: 0x1700001C RID: 28
-        // (get) Token: 0x06000094 RID: 148 RVA: 0x000038D6 File Offset: 0x00001AD6
-        // (set) Token: 0x06000095 RID: 149 RVA: 0x000038DE File Offset: 0x00001ADE
+        /// <summary>
+        /// 获取或设置数据字节数组
+        /// </summary>
+        /// <value>包含传输数据的字节数组</value>
         public byte[] Data { get; set; }
 
-        // Token: 0x1700001D RID: 29
-        // (get) Token: 0x06000096 RID: 150 RVA: 0x000038E7 File Offset: 0x00001AE7
-        // (set) Token: 0x06000097 RID: 151 RVA: 0x000038EF File Offset: 0x00001AEF
+        /// <summary>
+        /// 获取或设置数据的偏移量
+        /// </summary>
+        /// <value>数据在缓冲区中的起始位置</value>
         public int Offset { get; set; }
 
-        // Token: 0x1700001E RID: 30
-        // (get) Token: 0x06000098 RID: 152 RVA: 0x000038F8 File Offset: 0x00001AF8
-        // (set) Token: 0x06000099 RID: 153 RVA: 0x00003900 File Offset: 0x00001B00
+        /// <summary>
+        /// 获取或设置数据的长度
+        /// </summary>
+        /// <value>要处理的数据长度</value>
         public int Length { get; set; }
     }
 }

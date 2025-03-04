@@ -5,10 +5,16 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x02000016 RID: 22
+    /// <summary>
+    /// SSL流TCP会话类，用于处理SSL/TLS加密通信
+    /// </summary>
     public class SslStreamTcpSession : AuthenticatedStreamTcpSession
     {
-        // Token: 0x060000CA RID: 202 RVA: 0x00003A7C File Offset: 0x00001C7C
+        /// <summary>
+        /// 启动认证流
+        /// </summary>
+        /// <param name="client">客户端Socket对象</param>
+        /// <exception cref="Exception">当安全选项未配置时抛出异常</exception>
         protected override void StartAuthenticatedStream(Socket client)
         {
             if (base.Security == null)
@@ -19,7 +25,11 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.AuthenticateAsClientAsync(new SslStream(new NetworkStream(client), false, new RemoteCertificateValidationCallback(this.ValidateRemoteCertificate)), base.Security);
         }
 
-        // Token: 0x060000CB RID: 203 RVA: 0x00003AB8 File Offset: 0x00001CB8
+        /// <summary>
+        /// 异步进行客户端认证
+        /// </summary>
+        /// <param name="sslStream">SSL流对象</param>
+        /// <param name="securityOption">安全选项配置</param>
         private async void AuthenticateAsClientAsync(SslStream sslStream, SecurityOption securityOption)
         {
             try
@@ -36,7 +46,14 @@ namespace GameFrameX.SuperSocket.ClientEngine
             base.OnAuthenticatedStreamConnected(sslStream);
         }
 
-        // Token: 0x060000CC RID: 204 RVA: 0x00003B04 File Offset: 0x00001D04
+        /// <summary>
+        /// 验证远程证书
+        /// </summary>
+        /// <param name="sender">发送者对象</param>
+        /// <param name="certificate">X509证书</param>
+        /// <param name="chain">证书链</param>
+        /// <param name="sslPolicyErrors">SSL策略错误</param>
+        /// <returns>如果证书验证通过返回true，否则返回false</returns>
         private bool ValidateRemoteCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors == SslPolicyErrors.None)

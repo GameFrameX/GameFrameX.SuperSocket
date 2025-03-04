@@ -3,24 +3,41 @@ using System.Collections.Generic;
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x02000007 RID: 7
+    /// <summary>
+    /// 批量队列接口，用于处理批量数据的入队和出队操作
+    /// </summary>
+    /// <typeparam name="T">队列中元素的类型</typeparam>
     public interface IBatchQueue<T>
     {
-        // Token: 0x06000038 RID: 56
+        /// <summary>
+        /// 将单个元素添加到队列中
+        /// </summary>
+        /// <param name="item">要入队的元素</param>
+        /// <returns>入队操作是否成功</returns>
         bool Enqueue(T item);
 
-        // Token: 0x06000039 RID: 57
+        /// <summary>
+        /// 将多个元素添加到队列中
+        /// </summary>
+        /// <param name="items">要入队的元素列表</param>
+        /// <returns>入队操作是否成功</returns>
         bool Enqueue(IList<T> items);
 
-        // Token: 0x0600003A RID: 58
+        /// <summary>
+        /// 尝试从队列中取出元素
+        /// </summary>
+        /// <param name="outputItems">用于存储出队元素的列表</param>
+        /// <returns>出队操作是否成功</returns>
         bool TryDequeue(IList<T> outputItems);
 
-        // Token: 0x17000008 RID: 8
-        // (get) Token: 0x0600003B RID: 59
+        /// <summary>
+        /// 获取队列是否为空
+        /// </summary>
         bool IsEmpty { get; }
 
-        // Token: 0x17000009 RID: 9
-        // (get) Token: 0x0600003C RID: 60
+        /// <summary>
+        /// 获取队列中的元素数量
+        /// </summary>
         int Count { get; }
     }
 }

@@ -6,29 +6,43 @@ using System.Threading;
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x0200000E RID: 14
+    /// <summary>
+    /// 经过身份验证的TCP会话的抽象基类
+    /// </summary>
     public abstract class AuthenticatedStreamTcpSession : TcpClientSession
     {
-        // Token: 0x06000060 RID: 96 RVA: 0x00003409 File Offset: 0x00001609
+        /// <summary>
+        /// 初始化 AuthenticatedStreamTcpSession 的新实例
+        /// </summary>
         public AuthenticatedStreamTcpSession()
         {
         }
 
-        // Token: 0x17000012 RID: 18
-        // (get) Token: 0x06000061 RID: 97 RVA: 0x00003411 File Offset: 0x00001611
-        // (set) Token: 0x06000062 RID: 98 RVA: 0x00003419 File Offset: 0x00001619
+        /// <summary>
+        /// 获取或设置安全选项
+        /// </summary>
         public SecurityOption Security { get; set; }
 
-        // Token: 0x06000063 RID: 99 RVA: 0x00003422 File Offset: 0x00001622
+        /// <summary>
+        /// 处理Socket事件完成的回调方法
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">Socket异步事件参数</param>
         protected override void SocketEventArgsCompleted(object sender, SocketAsyncEventArgs e)
         {
             base.ProcessConnect(sender as Socket, null, e, null);
         }
 
-        // Token: 0x06000064 RID: 100
+        /// <summary>
+        /// 启动经过身份验证的流
+        /// </summary>
+        /// <param name="client">客户端Socket</param>
         protected abstract void StartAuthenticatedStream(Socket client);
 
-        // Token: 0x06000065 RID: 101 RVA: 0x00003434 File Offset: 0x00001634
+        /// <summary>
+        /// 获取Socket时的处理方法
+        /// </summary>
+        /// <param name="e">Socket异步事件参数</param>
         protected override void OnGetSocket(SocketAsyncEventArgs e)
         {
             try
@@ -44,7 +58,10 @@ namespace GameFrameX.SuperSocket.ClientEngine
             }
         }
 
-        // Token: 0x06000066 RID: 102 RVA: 0x00003474 File Offset: 0x00001674
+        /// <summary>
+        /// 当验证流连接成功时的处理方法
+        /// </summary>
+        /// <param name="stream">已验证的流</param>
         protected void OnAuthenticatedStreamConnected(AuthenticatedStream stream)
         {
             this.m_Stream = stream;
@@ -64,13 +81,17 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.BeginRead();
         }
 
-        // Token: 0x06000067 RID: 103 RVA: 0x000034CD File Offset: 0x000016CD
+        /// <summary>
+        /// 开始读取数据
+        /// </summary>
         private void BeginRead()
         {
             this.ReadAsync();
         }
 
-        // Token: 0x06000068 RID: 104 RVA: 0x000034D8 File Offset: 0x000016D8
+        /// <summary>
+        /// 异步读取数据
+        /// </summary>
         private async void ReadAsync()
         {
             while (base.IsConnected)
@@ -116,7 +137,11 @@ namespace GameFrameX.SuperSocket.ClientEngine
             }
         }
 
-        // Token: 0x06000069 RID: 105 RVA: 0x00003514 File Offset: 0x00001714
+        /// <summary>
+        /// 判断异常是否可以忽略
+        /// </summary>
+        /// <param name="e">异常对象</param>
+        /// <returns>如果异常可以忽略返回true，否则返回false</returns>
         protected override bool IsIgnorableException(Exception e)
         {
             if (base.IsIgnorableException(e))
@@ -140,13 +165,19 @@ namespace GameFrameX.SuperSocket.ClientEngine
             return false;
         }
 
-        // Token: 0x0600006A RID: 106 RVA: 0x00003565 File Offset: 0x00001765
+        /// <summary>
+        /// 内部发送数据的方法
+        /// </summary>
+        /// <param name="items">要发送的数据项列表</param>
         protected override void SendInternal(PosList<ArraySegment<byte>> items)
         {
             this.SendInternalAsync(items);
         }
 
-        // Token: 0x0600006B RID: 107 RVA: 0x00003570 File Offset: 0x00001770
+        /// <summary>
+        /// 异步发送数据的内部方法
+        /// </summary>
+        /// <param name="items">要发送的数据项列表</param>
         private async void SendInternalAsync(PosList<ArraySegment<byte>> items)
         {
             try
@@ -177,7 +208,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             base.OnSendingCompleted();
         }
 
-        // Token: 0x0600006C RID: 108 RVA: 0x000035B4 File Offset: 0x000017B4
+        /// <summary>
+        /// 关闭连接
+        /// </summary>
         public override void Close()
         {
             AuthenticatedStream stream = this.m_Stream;
@@ -190,25 +223,29 @@ namespace GameFrameX.SuperSocket.ClientEngine
             base.Close();
         }
 
-        // Token: 0x04000014 RID: 20
+        /// <summary>
+        /// 已验证的流对象
+        /// </summary>
         private AuthenticatedStream m_Stream;
 
-        // Token: 0x02000022 RID: 34
+        /// <summary>
+        /// 流异步状态类
+        /// </summary>
         private class StreamAsyncState
         {
-            // Token: 0x17000037 RID: 55
-            // (get) Token: 0x0600012E RID: 302 RVA: 0x0000541B File Offset: 0x0000361B
-            // (set) Token: 0x0600012F RID: 303 RVA: 0x00005423 File Offset: 0x00003623
+            /// <summary>
+            /// 获取或设置已验证的流
+            /// </summary>
             public AuthenticatedStream Stream { get; set; }
 
-            // Token: 0x17000038 RID: 56
-            // (get) Token: 0x06000130 RID: 304 RVA: 0x0000542C File Offset: 0x0000362C
-            // (set) Token: 0x06000131 RID: 305 RVA: 0x00005434 File Offset: 0x00003634
+            /// <summary>
+            /// 获取或设置客户端Socket
+            /// </summary>
             public Socket Client { get; set; }
 
-            // Token: 0x17000039 RID: 57
-            // (get) Token: 0x06000132 RID: 306 RVA: 0x0000543D File Offset: 0x0000363D
-            // (set) Token: 0x06000133 RID: 307 RVA: 0x00005445 File Offset: 0x00003645
+            /// <summary>
+            /// 获取或设置发送项列表
+            /// </summary>
             public PosList<ArraySegment<byte>> SendingItems { get; set; }
         }
     }

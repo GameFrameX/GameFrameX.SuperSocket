@@ -3,10 +3,16 @@ using System.Net.Sockets;
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
-    // Token: 0x0200000D RID: 13
+    /// <summary>
+    /// 异步TCP会话类，用于处理TCP客户端的异步通信
+    /// </summary>
     public class AsyncTcpSession : TcpClientSession
     {
-        // Token: 0x06000057 RID: 87 RVA: 0x00003012 File Offset: 0x00001212
+        /// <summary>
+        /// 处理Socket异步事件完成的回调方法
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">Socket异步事件参数</param>
         protected override void SocketEventArgsCompleted(object sender, SocketAsyncEventArgs e)
         {
             if (e.LastOperation == SocketAsyncOperation.Connect)
@@ -18,7 +24,10 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.ProcessReceive(e);
         }
 
-        // Token: 0x06000058 RID: 88 RVA: 0x00003034 File Offset: 0x00001234
+        /// <summary>
+        /// 设置缓冲区
+        /// </summary>
+        /// <param name="bufferSegment">缓冲区数据段</param>
         protected override void SetBuffer(ArraySegment<byte> bufferSegment)
         {
             base.SetBuffer(bufferSegment);
@@ -28,7 +37,10 @@ namespace GameFrameX.SuperSocket.ClientEngine
             }
         }
 
-        // Token: 0x06000059 RID: 89 RVA: 0x00003068 File Offset: 0x00001268
+        /// <summary>
+        /// 获取Socket时的处理方法
+        /// </summary>
+        /// <param name="e">Socket异步事件参数</param>
         protected override void OnGetSocket(SocketAsyncEventArgs e)
         {
             if (base.Buffer.Array == null)
@@ -49,7 +61,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.StartReceive();
         }
 
-        // Token: 0x0600005A RID: 90 RVA: 0x000030F1 File Offset: 0x000012F1
+        /// <summary>
+        /// 开始接收数据
+        /// </summary>
         private void BeginReceive()
         {
             if (!base.Client.ReceiveAsync(this.m_SocketEventArgs))
@@ -58,7 +72,10 @@ namespace GameFrameX.SuperSocket.ClientEngine
             }
         }
 
-        // Token: 0x0600005B RID: 91 RVA: 0x00003114 File Offset: 0x00001314
+        /// <summary>
+        /// 处理接收到的数据
+        /// </summary>
+        /// <param name="e">Socket异步事件参数</param>
         private void ProcessReceive(SocketAsyncEventArgs e)
         {
             if (e.SocketError != SocketError.Success)
@@ -90,7 +107,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             this.StartReceive();
         }
 
-        // Token: 0x0600005C RID: 92 RVA: 0x0000318C File Offset: 0x0000138C
+        /// <summary>
+        /// 启动数据接收
+        /// </summary>
         private void StartReceive()
         {
             Socket client = base.Client;
@@ -140,7 +159,10 @@ namespace GameFrameX.SuperSocket.ClientEngine
             }
         }
 
-        // Token: 0x0600005D RID: 93 RVA: 0x00003230 File Offset: 0x00001430
+        /// <summary>
+        /// 内部发送数据方法
+        /// </summary>
+        /// <param name="items">要发送的数据段列表</param>
         protected override void SendInternal(PosList<ArraySegment<byte>> items)
         {
             if (this.m_SocketEventArgsSend == null)
@@ -206,7 +228,11 @@ namespace GameFrameX.SuperSocket.ClientEngine
             }
         }
 
-        // Token: 0x0600005E RID: 94 RVA: 0x00003374 File Offset: 0x00001574
+        /// <summary>
+        /// 发送完成的回调处理方法
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">Socket异步事件参数</param>
         private void Sending_Completed(object sender, SocketAsyncEventArgs e)
         {
             if (e.SocketError != SocketError.Success || e.BytesTransferred == 0)
@@ -227,7 +253,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
             base.OnSendingCompleted();
         }
 
-        // Token: 0x0600005F RID: 95 RVA: 0x000033CD File Offset: 0x000015CD
+        /// <summary>
+        /// 连接关闭时的处理方法
+        /// </summary>
         protected override void OnClosed()
         {
             if (this.m_SocketEventArgsSend != null)
@@ -245,10 +273,14 @@ namespace GameFrameX.SuperSocket.ClientEngine
             base.OnClosed();
         }
 
-        // Token: 0x04000012 RID: 18
+        /// <summary>
+        /// Socket异步事件参数，用于接收数据
+        /// </summary>
         private SocketAsyncEventArgs m_SocketEventArgs;
 
-        // Token: 0x04000013 RID: 19
+        /// <summary>
+        /// Socket异步事件参数，用于发送数据
+        /// </summary>
         private SocketAsyncEventArgs m_SocketEventArgsSend;
     }
 }
