@@ -29,6 +29,9 @@ namespace GameFrameX.SuperSocket.ClientEngine
         public virtual EndPoint LocalEndPoint { get; set; }
 
 
+        /// <summary>
+        /// Session is connected
+        /// </summary>
         public bool IsConnected { get; private set; }
 
 

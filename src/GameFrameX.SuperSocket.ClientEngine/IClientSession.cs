@@ -28,10 +28,6 @@ namespace GameFrameX.SuperSocket.ClientEngine
         // (set) Token: 0x060000A5 RID: 165
         int SendingQueueSize { get; set; }
 
-        // Token: 0x17000024 RID: 36
-        // (get) Token: 0x060000A6 RID: 166
-        bool IsConnected { get; }
-
         // Token: 0x060000A7 RID: 167
         void Connect(EndPoint remoteEndPoint);
 

@@ -12,6 +12,11 @@ public interface IGameAppSession
     string SessionID { get; }
 
     /// <summary>
+    /// Session is connected
+    /// </summary>
+    bool IsConnected { get; }
+
+    /// <summary>
     /// Send data to client
     /// </summary>
     /// <param name="data"></param>

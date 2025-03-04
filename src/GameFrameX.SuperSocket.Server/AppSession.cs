@@ -36,6 +36,7 @@ namespace GameFrameX.SuperSocket.Server
 
         public string SessionID { get; private set; }
 
+
         public virtual ValueTask SendAsync(byte[] data, CancellationToken cancellationToken = default)
         {
             return _connection.SendAsync(data, cancellationToken);
@@ -49,6 +50,22 @@ namespace GameFrameX.SuperSocket.Server
         public DateTimeOffset StartTime { get; private set; }
 
         public SessionState State { get; private set; } = SessionState.None;
+
+        /// <summary>
+        /// Session is connected
+        /// </summary>
+        public bool IsConnected
+        {
+            get
+            {
+                if (_connection?.CloseReason.HasValue != null)
+                {
+                    return false;
+                }
+
+                return State == SessionState.Connected;
+            }
+        }
 
         public IServerInfo Server { get; private set; }
 
@@ -180,7 +197,9 @@ namespace GameFrameX.SuperSocket.Server
             where TEventHandler : Delegate
         {
             if (sessionEvent == null)
+            {
                 return;
+            }
 
             foreach (var handler in sessionEvent.GetInvocationList())
             {
@@ -196,9 +215,11 @@ namespace GameFrameX.SuperSocket.Server
         public virtual async ValueTask CloseAsync(CloseReason reason)
         {
             var connection = Connection;
-
+            State = SessionState.Closed;
             if (connection == null)
+            {
                 return;
+            }
 
             try
             {

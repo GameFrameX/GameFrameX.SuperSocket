@@ -64,8 +64,8 @@ namespace GameFrameX.SuperSocket.Connection
         public override async IAsyncEnumerable<TPackageInfo> RunAsync<TPackageInfo>(IPipelineFilter<TPackageInfo> pipelineFilter)
         {
             var packagePipe = !Options.ReadAsDemand
-                ? new DefaultObjectPipe<TPackageInfo>()
-                : new DefaultObjectPipeWithSupplyControl<TPackageInfo>();
+                                  ? new DefaultObjectPipe<TPackageInfo>()
+                                  : new DefaultObjectPipeWithSupplyControl<TPackageInfo>();
 
             _packagePipe = packagePipe;
             _pipelineFilter = pipelineFilter;
@@ -94,7 +94,7 @@ namespace GameFrameX.SuperSocket.Connection
             try
             {
                 if (_pipeTask != null)
-                await _pipeTask.ConfigureAwait(false);
+                    await _pipeTask.ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
