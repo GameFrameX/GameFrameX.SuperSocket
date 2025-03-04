@@ -61,14 +61,6 @@ public class KestrelPipeConnection : PipeConnectionBase
         }
     }
 
-    protected override void OnClosed()
-    {
-        if (!CloseReason.HasValue)
-            CloseReason = global::GameFrameX.SuperSocket.Connection.CloseReason.RemoteClosing;
-
-        base.OnClosed();
-    }
-
     protected override void OnInputPipeRead(ReadResult result)
     {
         if (!result.IsCanceled && !result.IsCompleted)
