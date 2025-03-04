@@ -7,8 +7,16 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace GameFrameX.SuperSocket.Udp
 {
+    /// <summary>
+    /// UDP服务器主机构建器扩展类
+    /// </summary>
     public static class UdpServerHostBuilderExtensions
     {
+        /// <summary>
+        /// 使用UDP协议配置SuperSocket主机构建器
+        /// </summary>
+        /// <param name="hostBuilder">SuperSocket主机构建器</param>
+        /// <returns>配置后的SuperSocket主机构建器</returns>
         public static ISuperSocketHostBuilder UseUdp(this ISuperSocketHostBuilder hostBuilder)
         {
             return (hostBuilder.ConfigureServices((context, services) =>
@@ -33,6 +41,12 @@ namespace GameFrameX.SuperSocket.Udp
                 });
         }
 
+        /// <summary>
+        /// 使用UDP协议配置泛型SuperSocket主机构建器
+        /// </summary>
+        /// <typeparam name="TReceivePackage">接收数据包的类型</typeparam>
+        /// <param name="hostBuilder">泛型SuperSocket主机构建器</param>
+        /// <returns>配置后的泛型SuperSocket主机构建器</returns>
         public static ISuperSocketHostBuilder<TReceivePackage> UseUdp<TReceivePackage>(this ISuperSocketHostBuilder<TReceivePackage> hostBuilder)
         {
             return (hostBuilder as ISuperSocketHostBuilder).UseUdp() as ISuperSocketHostBuilder<TReceivePackage>;
