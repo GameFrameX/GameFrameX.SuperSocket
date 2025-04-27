@@ -17,9 +17,10 @@ namespace GameFrameX.SuperSocket.Server.Abstractions
 
         public bool NoDelay { get; set; }
 
-        public SslProtocols Security { get; set; }
-
-        public CertificateOptions CertificateOptions { get; set; }
+        /// <summary>
+        /// Gets or sets the authentication options for the listener.
+        /// </summary>
+        public ServerAuthenticationOptions AuthenticationOptions { get; set; }
 
         public TimeSpan ConnectionAcceptTimeOut { get; set; } = TimeSpan.FromSeconds(5);
 
@@ -50,7 +51,7 @@ namespace GameFrameX.SuperSocket.Server.Abstractions
 
         public override string ToString()
         {
-            return $"{nameof(Ip)}={Ip}, {nameof(Port)}={Port}, {nameof(Security)}={Security}, {nameof(Path)}={Path}, {nameof(BackLog)}={BackLog}, {nameof(NoDelay)}={NoDelay}";
+            return $"{nameof(Ip)}={Ip}, {nameof(Port)}={Port}, {nameof(AuthenticationOptions)}={AuthenticationOptions}, {nameof(Path)}={Path}, {nameof(BackLog)}={BackLog}, {nameof(NoDelay)}={NoDelay}";
         }
     }
 }

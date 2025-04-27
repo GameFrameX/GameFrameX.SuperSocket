@@ -1,6 +1,7 @@
 ﻿using System.IO.Pipelines;
 using System.Net;
 using GameFrameX.SuperSocket.ProtoBase;
+using GameFrameX.SuperSocket.ProtoBase.ProxyProtocol;
 
 namespace GameFrameX.SuperSocket.Connection
 {
@@ -25,6 +26,8 @@ namespace GameFrameX.SuperSocket.Connection
         public DateTimeOffset LastActiveTime { get; protected set; } = DateTimeOffset.Now;
 
         public CancellationToken ConnectionToken { get; protected set; }
+        public ProxyInfo ProxyInfo { get; protected set; }
+
         protected virtual void OnClosed()
         {
             IsClosed = true;

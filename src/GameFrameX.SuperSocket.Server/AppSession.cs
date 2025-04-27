@@ -8,19 +8,33 @@ using Microsoft.Extensions.Logging;
 
 namespace GameFrameX.SuperSocket.Server
 {
+    /// <summary>
+    /// Represents an application session that manages connection, state, and events.
+    /// </summary>
     public class AppSession : IAppSession, ILogger, ILoggerAccessor
     {
         private IConnection _connection;
 
+        /// <summary>
+        /// Gets the connection associated with the session.
+        /// </summary>
         protected internal IConnection Connection
         {
             get { return _connection; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AppSession"/> class.
+        /// </summary>
         public AppSession()
         {
         }
 
+        /// <summary>
+        /// Initializes the session with the specified server and connection.
+        /// </summary>
+        /// <param name="server">The server information.</param>
+        /// <param name="connection">The connection associated with the session.</param>
         void IAppSession.Initialize(IServerInfo server, IConnection connection)
         {
             if (connection is IConnectionWithSessionIdentifier connectionWithSessionIdentifier)
@@ -34,25 +48,46 @@ namespace GameFrameX.SuperSocket.Server
             State = SessionState.Initialized;
         }
 
+        /// <summary>
+        /// Gets the session ID.
+        /// </summary>
         public string SessionID { get; private set; }
 
 
+        /// <summary>
+        /// Sends binary data asynchronously.
+        /// </summary>
+        /// <param name="data">The binary data to send.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>ly.
         public virtual ValueTask SendAsync(byte[] data, CancellationToken cancellationToken = default)
         {
             return _connection.SendAsync(data, cancellationToken);
         }
 
+        /// <summary>
+        /// Sends binary data asynchronously.
+        /// </summary>
+        /// <param name="data">The binary data to send.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
         public virtual ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
         {
             return _connection.SendAsync(data, cancellationToken);
         }
 
+        /// <summary>
+        /// Gets the start time of the session.
+        /// </summary>
         public DateTimeOffset StartTime { get; private set; }
 
+        /// <summary>
+        /// Gets the current state of the session.
+        /// </summary>
         public SessionState State { get; private set; } = SessionState.None;
 
         /// <summary>
-        /// Session is connected
+        /// Gets the server information associated with the session.
         /// </summary>
         public bool IsConnected
         {
@@ -74,29 +109,60 @@ namespace GameFrameX.SuperSocket.Server
             get { return _connection; }
         }
 
+        /// <summary>
+        /// Gets or sets the data context for the session.
+        /// </summary>
         public object DataContext { get; set; }
 
+        /// <summary>
+        /// Gets the remote endpoint of the session.
+        /// </summary>
         public EndPoint RemoteEndPoint
         {
-            get { return _connection?.RemoteEndPoint; }
+            get
+            {
+                var connection = _connection;
+
+                if (connection == null)
+                    return null;
+
+                return connection.ProxyInfo?.SourceEndPoint ?? connection.RemoteEndPoint;
+            }
         }
 
+        /// <summary>
+        /// Gets the local endpoint of the session.
+        /// </summary>
         public EndPoint LocalEndPoint
         {
             get { return _connection?.LocalEndPoint; }
         }
 
+        /// <summary>
+        /// Gets the last active time of the session.
+        /// </summary>
         public DateTimeOffset LastActiveTime
         {
             get { return _connection?.LastActiveTime ?? DateTimeOffset.MinValue; }
         }
 
+        /// <summary>
+        /// Occurs when the session is connected.
+        /// </summary>
         public event AsyncEventHandler Connected;
 
+        /// <summary>
+        /// Occurs when the session is closed.
+        /// </summary>
         public event AsyncEventHandler<CloseEventArgs> Closed;
 
         private Dictionary<object, object> _items;
 
+        /// <summary>
+        /// Gets or sets session-specific data by key.
+        /// </summary>
+        /// <param name="name">The key of the data.</param>
+        /// <returns>The value associated with the key.</returns>
         public object this[object name]
         {
             get
@@ -104,16 +170,11 @@ namespace GameFrameX.SuperSocket.Server
                 var items = _items;
 
                 if (items == null)
-                    return null;
-
-                object value;
-
-                if (items.TryGetValue(name, out value))
                 {
-                    return value;
+                    return null;
                 }
 
-                return null;
+                return items.GetValueOrDefault(name);
             }
 
             set
@@ -130,6 +191,11 @@ namespace GameFrameX.SuperSocket.Server
             }
         }
 
+        /// <summary>
+        /// Closes the session.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
         protected virtual ValueTask OnSessionClosedAsync(CloseEventArgs e)
         {
             return new ValueTask();
@@ -207,11 +273,20 @@ namespace GameFrameX.SuperSocket.Server
             }
         }
 
+        /// <summary>
+        /// Closes the session asynchronously.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous close operation.</returns>
         public virtual async ValueTask CloseAsync()
         {
             await CloseAsync(CloseReason.LocalClosing);
         }
 
+        /// <summary>
+        /// Closes the session asynchronously with the specified reason.
+        /// </summary>
+        /// <param name="reason">The reason for closing the session.</param>
+        /// <returns>A task that represents the asynchronous close operation.</returns>
         public virtual async ValueTask CloseAsync(CloseReason reason)
         {
             var connection = Connection;
@@ -232,6 +307,9 @@ namespace GameFrameX.SuperSocket.Server
 
         #region ILogger
 
+        /// <summary>
+        /// Gets the logger associated with the session.
+        /// </summary>
         ILogger GetLogger()
         {
             return (Server as ILoggerAccessor).Logger;
@@ -252,6 +330,9 @@ namespace GameFrameX.SuperSocket.Server
             return GetLogger().BeginScope<TState>(state);
         }
 
+        /// <summary>
+        /// Gets the logger associated with the session.
+        /// </summary>
         public ILogger Logger => this as ILogger;
 
         #endregion

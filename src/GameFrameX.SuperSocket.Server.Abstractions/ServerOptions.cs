@@ -20,5 +20,6 @@ namespace GameFrameX.SuperSocket.Server.Abstractions
         /// In seconds.
         /// </summary>
         public int PackageHandlingTimeOut { get; set; } = 30;
+        public bool EnableProxyProtocol { get; set; }
     }
 }

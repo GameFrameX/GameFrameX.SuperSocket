@@ -8,24 +8,38 @@ using GameFrameX.SuperSocket.ProtoBase;
 
 namespace GameFrameX.SuperSocket.Http
 {
+    /// <summary>
+    /// Represents a pipeline filter for parsing HTTP requests from a data stream.
+    /// </summary>
     public class HttpPipelineFilter : IPipelineFilter<HttpRequest>
     {
         private static ReadOnlySpan<byte> _CRLF => new byte[] { (byte)'\r', (byte)'\n' };
-
+        
         private static readonly char _TAB = '\t';
 
         private static readonly char _COLON = ':';
 
         private static readonly ReadOnlyMemory<byte> _headerTerminator = new byte[] { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
-
+        
+        /// <summary>
+        /// Gets or sets the package decoder for the HTTP request.
+        /// </summary>
         public IPackageDecoder<HttpRequest> Decoder { get; set; }
 
+        /// <summary>
+        /// Gets or sets the next pipeline filter in the chain.
+        /// </summary>
         public IPipelineFilter<HttpRequest> NextFilter { get; internal set; }
 
         private HttpRequest _currentRequest;
 
         private long _bodyLength;
 
+        /// <summary>
+        /// Filters the data stream to parse an HTTP request.
+        /// </summary>
+        /// <param name="reader">The sequence reader for the data stream.</param>
+        /// <returns>The parsed <see cref="HttpRequest"/>, or <c>null</c> if more data is needed.</returns>
         public HttpRequest Filter(ref SequenceReader<byte> reader)
         {
             if (_bodyLength == 0)
@@ -36,7 +50,7 @@ namespace GameFrameX.SuperSocket.Http
                     return null;
 
                 reader.Advance(terminatorSpan.Length);
-
+                
                 var request = ParseHttpHeaderItems(pack);
 
                 var contentLength = request.Items?["content-length"];
@@ -48,7 +62,7 @@ namespace GameFrameX.SuperSocket.Http
 
                 if (bodyLength == 0)
                     return request;
-
+                    
                 _bodyLength = bodyLength;
                 _currentRequest = request;
 
@@ -79,7 +93,7 @@ namespace GameFrameX.SuperSocket.Http
 
             var prevKey = string.Empty;
             var line = string.Empty;
-
+            
             while (!string.IsNullOrEmpty(line = reader.ReadLine()))
             {
                 if (line.StartsWith(_TAB) && !string.IsNullOrEmpty(prevKey))
@@ -137,12 +151,18 @@ namespace GameFrameX.SuperSocket.Http
             return new HttpRequest(metaInfo[0], metaInfo[1], metaInfo[2], items);
         }
 
+        /// <summary>
+        /// Resets the state of the pipeline filter.
+        /// </summary>
         public void Reset()
         {
             _bodyLength = 0;
             _currentRequest = null;
         }
 
+        /// <summary>
+        /// Gets or sets the context associated with the pipeline filter.
+        /// </summary>
         public object Context { get; set; }
     }
 }

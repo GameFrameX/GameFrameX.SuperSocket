@@ -1,73 +1,96 @@
 ﻿using System.Buffers;
 using System.Net.Sockets;
+using GameFrameX.SuperSocket.Connection.Sockets;
+using Microsoft.Extensions.ObjectPool;
 
 namespace GameFrameX.SuperSocket.Connection
 {
+    /// <summary>
+    /// Represents a pipe connection for managing TCP-based connections.
+    /// </summary>
     public class TcpPipeConnection : PipeConnection
     {
         private Socket _socket;
 
-        private List<ArraySegment<byte>> _segmentsForSend;
+        private readonly ObjectPool<SocketSender> _socketSenderPool;
 
-        public TcpPipeConnection(Socket socket, ConnectionOptions options)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TcpPipeConnection"/> class with the specified socket, options, and socket sender pool.
+        /// </summary>
+        /// <param name="socket">The TCP socket.</param>
+        /// <param name="options">The connection options.</param>
+        /// <param name="socketSenderPool">The pool of socket senders, or <c>null</c> to create new senders as needed.</param>
+        public TcpPipeConnection(Socket socket, ConnectionOptions options, ObjectPool<SocketSender> socketSenderPool = null)
             : base(options)
         {
             _socket = socket;
             RemoteEndPoint = socket.RemoteEndPoint;
             LocalEndPoint = socket.LocalEndPoint;
+
+            _socketSenderPool = socketSenderPool;
         }
 
+        /// <summary>
+        /// Handles the closure of the connection.
+        /// </summary>
         protected override void OnClosed()
         {
             _socket = null;
             base.OnClosed();
         }
 
+        /// <summary>
+        /// Fills the pipe with data received from the socket asynchronously.
+        /// </summary>
+        /// <param name="memory">The memory buffer to fill with data.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>The total number of bytes read.</returns>
         protected override async ValueTask<int> FillPipeWithDataAsync(Memory<byte> memory, CancellationToken cancellationToken)
         {
-            return await ReceiveAsync(_socket, memory, SocketFlags.None, cancellationToken);
+            return await ReceiveAsync(_socket, memory, SocketFlags.None, cancellationToken)
+                       .ConfigureAwait(false);
         }
 
         private async ValueTask<int> ReceiveAsync(Socket socket, Memory<byte> memory, SocketFlags socketFlags, CancellationToken cancellationToken)
         {
             return await socket
-                .ReceiveAsync(GetArrayByMemory((ReadOnlyMemory<byte>)memory), socketFlags, cancellationToken)
-                .ConfigureAwait(false);
+                         .ReceiveAsync(GetArrayByMemory(memory), socketFlags, cancellationToken)
+                         .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Sends data over the connection asynchronously.
+        /// </summary>
+        /// <param name="buffer">The data to send.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>The total number of bytes sent.</returns>
         protected override async ValueTask<int> SendOverIoAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
         {
-            if (buffer.IsSingleSegment)
+            var socketSenderPool = _socketSenderPool;
+
+            var socketSender = socketSenderPool?.Get() ?? new SocketSender();
+
+            try
             {
-                return await _socket
-                    .SendAsync(GetArrayByMemory(buffer.First), SocketFlags.None, cancellationToken)
-                    .ConfigureAwait(false);
-            }
+                var sentBytes = await socketSender.SendAsync(_socket, buffer).ConfigureAwait(false);
 
-            if (_segmentsForSend == null)
+                if (socketSenderPool != null)
+                {
+                    socketSenderPool.Return(socketSender);
+                    socketSender = null;
+                }
+
+                return sentBytes;
+            }
+            finally
             {
-                _segmentsForSend = new List<ArraySegment<byte>>();
+                socketSender?.Dispose();
             }
-            else
-            {
-                _segmentsForSend.Clear();
-            }
-
-            var segments = _segmentsForSend;
-
-            foreach (var piece in buffer)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                _segmentsForSend.Add(GetArrayByMemory(piece));
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return await _socket
-                .SendAsync(_segmentsForSend, SocketFlags.None)
-                .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Closes the connection by shutting down and closing the socket.
+        /// </summary>
         protected override void Close()
         {
             var socket = _socket;
@@ -88,6 +111,11 @@ namespace GameFrameX.SuperSocket.Connection
             }
         }
 
+        /// <summary>
+        /// Determines whether the specified exception is ignorable.
+        /// </summary>
+        /// <param name="e">The exception to check.</param>
+        /// <returns><c>true</c> if the exception is ignorable; otherwise, <c>false</c>.</returns>
         protected override bool IsIgnorableException(Exception e)
         {
             if (base.IsIgnorableException(e))

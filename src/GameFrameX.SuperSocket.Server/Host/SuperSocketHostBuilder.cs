@@ -38,7 +38,10 @@ namespace GameFrameX.SuperSocket.Server.Host
 
         private void ConfigureHostBuilder()
         {
-            HostBuilder.ConfigureServices((ctx, services) => { RegisterBasicServices(ctx, services, services); }).ConfigureServices((ctx, services) =>
+            HostBuilder.ConfigureServices((ctx, services) =>
+            {
+                RegisterBasicServices(ctx, services, services);
+            }).ConfigureServices((ctx, services) =>
             {
                 foreach (var action in ConfigureServicesActions)
                 {
@@ -49,7 +52,10 @@ namespace GameFrameX.SuperSocket.Server.Host
                 {
                     action(ctx, services);
                 }
-            }).ConfigureServices((ctx, services) => { RegisterDefaultServices(ctx, services, services); });
+            }).ConfigureServices((ctx, services) =>
+            {
+                RegisterDefaultServices(ctx, services, services);
+            });
         }
 
         void IMinimalApiHostBuilder.ConfigureHostBuilder()

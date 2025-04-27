@@ -17,19 +17,28 @@ public static class WebSocketServerExtensions
     internal static ISuperSocketHostBuilder<WebSocketPackage> UseWebSocketMiddleware(this ISuperSocketHostBuilder<WebSocketPackage> builder)
     {
         return builder
-                .ConfigureServices((ctx, services) => { services.AddSingleton<IWebSocketServerMiddleware, WebSocketServerMiddleware>(); })
+                .ConfigureServices((ctx, services) =>
+                {
+                    services.AddSingleton<IWebSocketServerMiddleware, WebSocketServerMiddleware>();
+                })
                 .UseMiddleware<WebSocketServerMiddleware>(s => s.GetService<IWebSocketServerMiddleware>() as WebSocketServerMiddleware)
             as ISuperSocketHostBuilder<WebSocketPackage>;
     }
 
     public static ISuperSocketHostBuilder<WebSocketPackage> UseWebSocketMessageHandler(this ISuperSocketHostBuilder<WebSocketPackage> builder, Func<WebSocketSession, WebSocketPackage, ValueTask> handler)
     {
-        return builder.ConfigureServices((ctx, services) => { services.AddSingleton<Func<WebSocketSession, WebSocketPackage, ValueTask>>(handler); }) as ISuperSocketHostBuilder<WebSocketPackage>;
+            return builder.ConfigureServices((ctx, services) => 
+            {
+                services.AddSingleton<Func<WebSocketSession, WebSocketPackage, ValueTask>>(handler);
+            }) as ISuperSocketHostBuilder<WebSocketPackage>;
     }
 
     public static ISuperSocketHostBuilder<WebSocketPackage> UseWebSocketMessageHandler(this ISuperSocketHostBuilder<WebSocketPackage> builder, string protocol, Func<WebSocketSession, WebSocketPackage, ValueTask> handler)
     {
-        return builder.ConfigureServices((ctx, services) => { services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ISubProtocolHandler), new DelegateSubProtocolHandler(protocol, handler))); }) as ISuperSocketHostBuilder<WebSocketPackage>;
+            return builder.ConfigureServices((ctx, services) => 
+            {
+                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ISubProtocolHandler), new DelegateSubProtocolHandler(protocol, handler)));
+            }) as ISuperSocketHostBuilder<WebSocketPackage>;
     }
 
     public static ISuperSocketHostBuilder<WebSocketPackage> UseCommand<TPackageInfo, TPackageMapper>(this ISuperSocketHostBuilder<WebSocketPackage> builder)
@@ -43,7 +52,10 @@ public static class WebSocketServerExtensions
         {
             services.AddSingleton(typeof(IWebSocketCommandMiddleware), commandMiddlewareType);
             services.AddSingleton<IPackageMapper<WebSocketPackage, TPackageInfo>, TPackageMapper>();
-        }).ConfigureServices((ctx, services) => { services.Configure<CommandOptions>(ctx.Configuration?.GetSection("serverOptions")?.GetSection("commands")); }) as ISuperSocketHostBuilder<WebSocketPackage>;
+            }).ConfigureServices((ctx, services) =>
+            {
+                services.Configure<CommandOptions>(ctx.Configuration?.GetSection("serverOptions")?.GetSection("commands"));
+            }) as ISuperSocketHostBuilder<WebSocketPackage>;
     }
 
     public static ISuperSocketHostBuilder<WebSocketPackage> UseCommand<TPackageInfo, TPackageMapper>(this ISuperSocketHostBuilder<WebSocketPackage> builder, Action<CommandOptions> configurator)
@@ -51,7 +63,10 @@ public static class WebSocketServerExtensions
         where TPackageMapper : class, IPackageMapper<WebSocketPackage, TPackageInfo>, new()
     {
         return builder.UseCommand<TPackageInfo, TPackageMapper>()
-            .ConfigureServices((ctx, services) => { services.Configure(configurator); }) as ISuperSocketHostBuilder<WebSocketPackage>;
+                .ConfigureServices((ctx, services) =>
+                {
+                    services.Configure(configurator);
+                }) as ISuperSocketHostBuilder<WebSocketPackage>;
     }
 
     public static ISuperSocketHostBuilder<WebSocketPackage> UseCommand<TPackageInfo, TPackageMapper>(this ISuperSocketHostBuilder<WebSocketPackage> builder, string protocol, Action<CommandOptions> commandOptionsAction = null)
@@ -65,7 +80,7 @@ public static class WebSocketServerExtensions
             commandOptionsAction?.Invoke(commandOptions);
             var commandOptionsWrapper = new OptionsWrapper<CommandOptions>(commandOptions);
 
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<ISubProtocolHandler, CommandSubProtocolHandler<TPackageInfo>>(sp =>
+                services.TryAddEnumerable(ServiceDescriptor.Singleton<ISubProtocolHandler, CommandSubProtocolHandler<TPackageInfo>>((sp) =>
             {
                 var mapper = ActivatorUtilities.CreateInstance<TPackageMapper>(sp);
                 return new CommandSubProtocolHandler<TPackageInfo>(protocol, sp, commandOptionsWrapper, mapper);
@@ -75,7 +90,10 @@ public static class WebSocketServerExtensions
 
     public static ISuperSocketHostBuilder<WebSocketPackage> UsePerMessageCompression(this ISuperSocketHostBuilder<WebSocketPackage> builder)
     {
-        return builder.ConfigureServices((ctx, services) => { services.TryAddEnumerable(ServiceDescriptor.Singleton<IWebSocketExtensionFactory, WebSocketPerMessageCompressionExtensionFactory>()); });
+             return builder.ConfigureServices((ctx, services) =>
+             {
+                 services.TryAddEnumerable(ServiceDescriptor.Singleton<IWebSocketExtensionFactory, WebSocketPerMessageCompressionExtensionFactory>());
+             });
     }
 
     public static MultipleServerHostBuilder AddWebSocketServer(this MultipleServerHostBuilder hostBuilder, Action<ISuperSocketHostBuilder<WebSocketPackage>> hostBuilderDelegate)

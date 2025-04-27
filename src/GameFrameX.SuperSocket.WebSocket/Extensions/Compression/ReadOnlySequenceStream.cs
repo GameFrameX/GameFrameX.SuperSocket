@@ -1,7 +1,4 @@
-using System;
 using System.Buffers;
-using System.IO;
-using System.IO.Compression;
 
 namespace GameFrameX.SuperSocket.WebSocket.Extensions.Compression
 {
@@ -19,10 +16,14 @@ namespace GameFrameX.SuperSocket.WebSocket.Extensions.Compression
 
         public override long Length => _length;
 
+        /// <summary>
+        /// Gets or sets the position within the stream. Not implemented.
+        /// </summary>
+        /// <exception cref="NotImplementedException">Always thrown.</exception>
         public override long Position
         {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public ReadOnlySequenceStream(ReadOnlySequence<byte> sequence)

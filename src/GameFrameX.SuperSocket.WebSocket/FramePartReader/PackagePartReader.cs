@@ -1,5 +1,4 @@
-﻿using System;
-using System.Buffers;
+﻿using System.Buffers;
 using GameFrameX.SuperSocket.ProtoBase;
 
 
@@ -33,10 +32,19 @@ namespace GameFrameX.SuperSocket.WebSocket.FramePartReader
         protected bool TryInitIfEmptyMessage(WebSocketPackage package)
         {
             if (package.PayloadLength != 0)
+            {
                 return false;
+            }
+
+            if (package.Head != null)
+            {
+                return false;
+            }
 
             if (package.OpCode == OpCode.Text)
+            {
                 package.Message = string.Empty;
+            }
 
             return true;
         }

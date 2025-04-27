@@ -50,4 +50,12 @@ namespace GameFrameX.SuperSocket.Connection
         /// </summary>
         InternalError = 8,
     }
+    public class CloseEventArgs : EventArgs
+    {
+        public CloseReason Reason { get; private set; }
+        public CloseEventArgs(CloseReason reason)
+        {
+            Reason = reason;
+        }
+    }
 }

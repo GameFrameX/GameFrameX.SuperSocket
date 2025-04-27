@@ -1,6 +1,7 @@
 ﻿using System.IO.Pipelines;
 using System.Net;
 using GameFrameX.SuperSocket.ProtoBase;
+using GameFrameX.SuperSocket.ProtoBase.ProxyProtocol;
 
 namespace GameFrameX.SuperSocket.Connection
 {
@@ -30,5 +31,6 @@ namespace GameFrameX.SuperSocket.Connection
 
         CloseReason? CloseReason { get; }
         CancellationToken ConnectionToken { get; }
+        ProxyInfo ProxyInfo { get; }
     }
 }

@@ -5,30 +5,36 @@ using GameFrameX.SuperSocket.Server.Abstractions.Connections;
 
 namespace GameFrameX.SuperSocket.Server.Connection
 {
+    /// <summary>
+    /// Initializes an SSL stream for secure communication.
+    /// </summary>
     public class SslStreamInitializer : IConnectionStreamInitializer
     {
         private SslServerAuthenticationOptions _authOptions;
 
+        /// <summary>
+        /// Configures the SSL stream initializer with the specified listen options.
+        /// </summary>
+        /// <param name="listenOptions">The options for the listener, including authentication settings.</param>
         public void Setup(ListenOptions listenOptions)
         {
-            var authOptions = new SslServerAuthenticationOptions();
+            var authOptions = listenOptions.AuthenticationOptions;
 
-            authOptions.EnabledSslProtocols = listenOptions.Security;
-
-            if (listenOptions.CertificateOptions.Certificate == null)
+            if (authOptions.ServerCertificate == null)
             {
-                listenOptions.CertificateOptions.EnsureCertificate();
+                authOptions.EnsureCertificate();
             }
-
-            authOptions.ServerCertificate = listenOptions.CertificateOptions.Certificate;
-            authOptions.ClientCertificateRequired = listenOptions.CertificateOptions.ClientCertificateRequired;
-
-            if (listenOptions.CertificateOptions.RemoteCertificateValidationCallback != null)
-                authOptions.RemoteCertificateValidationCallback = listenOptions.CertificateOptions.RemoteCertificateValidationCallback;
-
+            
             _authOptions = authOptions;
         }
 
+        /// <summary>
+        /// Initializes the SSL stream asynchronously.
+        /// </summary>
+        /// <param name="socket">The socket associated with the connection.</param>
+        /// <param name="stream">The underlying stream to wrap with SSL.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the initialized SSL stream.</returns>
         public async Task<Stream> InitializeAsync(Socket socket, Stream stream, CancellationToken cancellationToken)
         {
             var sslStream = new SslStream(stream, false);

@@ -1,12 +1,19 @@
-using System;
-using System.Threading.Tasks;
-
 namespace GameFrameX.SuperSocket.Server.Abstractions
 {
     public interface IServer : IServerInfo, IDisposable, IAsyncDisposable
     {
-        Task<bool> StartAsync();
+        /// <summary>
+        /// Starts the server asynchronously.
+        /// </summary>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous start operation.</returns>
+        Task<bool> StartAsync(CancellationToken cancellationToken = default);
 
-        Task StopAsync();
+        /// <summary>
+        /// Stops the server asynchronously.
+        /// </summary>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous stop operation.</returns>
+        Task StopAsync(CancellationToken cancellationToken = default);
     }
 }

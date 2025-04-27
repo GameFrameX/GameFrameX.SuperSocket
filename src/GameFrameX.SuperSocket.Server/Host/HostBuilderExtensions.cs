@@ -119,6 +119,21 @@ namespace GameFrameX.SuperSocket.Server.Host
             return new MultipleServerHostBuilder(hostBuilder);
         }
 
+        /// <summary>
+        /// Converts an <see cref="IHostApplicationBuilder"/> to a <see cref="SuperSocketWebApplicationBuilder"/>.
+        /// </summary>
+        /// <param name="hostApplicationBuilder">The host application builder to convert.</param>
+        /// <param name="configureServerHostBuilder">The action to configure the server host builder.</param>
+        /// <returns>An instance of <see cref="SuperSocketWebApplicationBuilder"/>.</returns>
+        public static SuperSocketWebApplicationBuilder AsSuperSocketWebApplicationBuilder(this IHostApplicationBuilder hostApplicationBuilder, Action<MultipleServerHostBuilder> configureServerHostBuilder)
+        {
+            var applicationBuilder = new SuperSocketWebApplicationBuilder(hostApplicationBuilder);
+
+            var hostBuilder = new MultipleServerHostBuilder(applicationBuilder.Host);
+            configureServerHostBuilder(hostBuilder);
+            hostBuilder.AsMinimalApiHostBuilder().ConfigureHostBuilder();
+            return applicationBuilder;
+        }
         public static IMinimalApiHostBuilder AsMinimalApiHostBuilder(this ISuperSocketHostBuilder hostBuilder)
         {
             return hostBuilder;
@@ -126,7 +141,10 @@ namespace GameFrameX.SuperSocket.Server.Host
 
         public static ISuperSocketHostBuilder UseGZip(this ISuperSocketHostBuilder hostBuilder)
         {
-            return hostBuilder.ConfigureServices((hostCtx, services) => { services.AddSingleton<IConnectionStreamInitializersFactory>(new DefaultConnectionStreamInitializersFactory(CompressionLevel.Optimal)); }) as ISuperSocketHostBuilder;
+            return hostBuilder.ConfigureServices((hostCtx, services) =>
+            {
+                services.AddSingleton<IConnectionStreamInitializersFactory>(new DefaultConnectionStreamInitializersFactory(CompressionLevel.Optimal));
+            }) as ISuperSocketHostBuilder;
         }
     }
 }

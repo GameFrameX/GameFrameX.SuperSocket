@@ -1,28 +1,41 @@
-using System;
 using System.Buffers;
-using System.IO;
-using System.IO.Compression;
 using GameFrameX.SuperSocket.ProtoBase;
 
 namespace GameFrameX.SuperSocket.WebSocket.Extensions.Compression
 {
     class WritableSequenceStream : Stream
     {
-        public override bool CanRead => false;
-
-        public override bool CanSeek => false;
-
-        public override bool CanWrite => true;
-
-        public override long Length
+        public override bool CanRead
         {
-            get => throw new NotSupportedException();
+            get { return false; }
         }
 
+        public override bool CanSeek
+        {
+            get { return false; }
+        }
+
+        public override bool CanWrite
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the length of the stream. Not supported.
+        /// </summary>
+        public override long Length
+        {
+            get { throw new NotSupportedException(); }
+        }
+
+        /// <summary>
+        /// Gets or sets the position within the stream. Not supported.
+        /// </summary>
+        /// <exception cref="NotSupportedException">Always thrown.</exception>
         public override long Position
         {
-            get => throw new NotSupportedException();
-            set => throw new NotSupportedException();
+            get { throw new NotSupportedException(); }
+            set { throw new NotSupportedException(); }
         }
 
         private SequenceSegment _head;
@@ -60,9 +73,13 @@ namespace GameFrameX.SuperSocket.WebSocket.Extensions.Compression
             var segment = new SequenceSegment(data, count);
 
             if (_head == null)
+            {
                 _tail = _head = segment;
+            }
             else
+            {
                 _tail.SetNext(segment);
+            }
         }
 
         public ReadOnlySequence<byte> GetUnderlyingSequence()

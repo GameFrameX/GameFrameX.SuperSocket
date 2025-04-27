@@ -1,8 +1,7 @@
-using System;
-using System.IO;
 using System.Net.Sockets;
 using GameFrameX.SuperSocket.Connection;
-using GameFrameX.SuperSocket.ProtoBase;
+using GameFrameX.SuperSocket.Connection.Sockets;
+using Microsoft.Extensions.ObjectPool;
 
 namespace GameFrameX.SuperSocket.Client
 {
@@ -29,6 +28,13 @@ namespace GameFrameX.SuperSocket.Client
 
         public static readonly ConnectState CancelledState = new ConnectState(false);
 
+        private static Lazy<ObjectPool<SocketSender>> _socketSenderPool = new Lazy<ObjectPool<SocketSender>>(() =>
+        {
+            var policy = new DefaultPooledObjectPolicy<SocketSender>();
+            var pool = new DefaultObjectPool<SocketSender>(policy, EasyClient.SocketSenderPoolSize ?? EasyClient.DefaultSocketSenderPoolSize);
+            return pool;
+        });
+
         public IConnection CreateConnection(ConnectionOptions connectionOptions)
         {
             var stream = this.Stream;
@@ -40,7 +46,7 @@ namespace GameFrameX.SuperSocket.Client
             }
             else
             {
-                return new TcpPipeConnection(socket, connectionOptions);
+                return new TcpPipeConnection(socket, connectionOptions, _socketSenderPool.Value);
             }
         }
     }

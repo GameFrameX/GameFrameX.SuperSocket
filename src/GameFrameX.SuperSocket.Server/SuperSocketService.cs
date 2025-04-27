@@ -1,25 +1,37 @@
 using GameFrameX.SuperSocket.Connection;
 using GameFrameX.SuperSocket.Primitives;
 using GameFrameX.SuperSocket.ProtoBase;
+using GameFrameX.SuperSocket.ProtoBase.ProxyProtocol;
 using GameFrameX.SuperSocket.Server.Abstractions;
 using GameFrameX.SuperSocket.Server.Abstractions.Connections;
 using GameFrameX.SuperSocket.Server.Abstractions.Middleware;
 using GameFrameX.SuperSocket.Server.Abstractions.Session;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace GameFrameX.SuperSocket.Server
 {
+    /// <summary>
+    /// Represents a SuperSocket service that handles connections and sessions.
+    /// </summary>
+    /// <typeparam name="TReceivePackageInfo">The type of the package information received.</typeparam>
     public class SuperSocketService<TReceivePackageInfo> : ISuperSocketHostedService
     {
         private readonly IServiceProvider _serviceProvider;
 
+        /// <summary>
+        /// Gets the service provider for dependency injection.
+        /// </summary>
         public IServiceProvider ServiceProvider
         {
             get { return _serviceProvider; }
         }
 
+        /// <summary>
+        /// Gets the server options for configuration.
+        /// </summary>
         public ServerOptions Options { get; }
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -40,10 +52,16 @@ namespace GameFrameX.SuperSocket.Server
         private IPackageHandlingScheduler<TReceivePackageInfo> _packageHandlingScheduler;
         private IPackageHandlingContextAccessor<TReceivePackageInfo> _packageHandlingContextAccessor;
 
+        /// <summary>
+        /// Gets the name of the server.
+        /// </summary>
         public string Name { get; }
 
         private int _sessionCount;
 
+        /// <summary>
+        /// Gets the current session count.
+        /// </summary>
         public int SessionCount => _sessionCount;
 
         private ISessionFactory _sessionFactory;
@@ -66,6 +84,11 @@ namespace GameFrameX.SuperSocket.Server
 
         private SessionHandlers _sessionHandlers;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SuperSocketService{TReceivePackageInfo}"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider for dependency injection.</param>
+        /// <param name="serverOptions">The server options for configuration.</param>
         public SuperSocketService(IServiceProvider serviceProvider, IOptions<ServerOptions> serverOptions)
         {
             if (serviceProvider == null)
@@ -87,7 +110,7 @@ namespace GameFrameX.SuperSocket.Server
             InitializeMiddlewares();
 
             var packageHandler = serviceProvider.GetService<IPackageHandler<TReceivePackageInfo>>()
-                                 ?? _middlewares.OfType<IPackageHandler<TReceivePackageInfo>>().FirstOrDefault();
+                ?? _middlewares.OfType<IPackageHandler<TReceivePackageInfo>>().FirstOrDefault();
 
             if (packageHandler == null)
             {
@@ -96,17 +119,24 @@ namespace GameFrameX.SuperSocket.Server
             else
             {
                 var errorHandler = serviceProvider.GetService<Func<IAppSession, PackageHandlingException<TReceivePackageInfo>, ValueTask<bool>>>()
-                                   ?? OnSessionErrorAsync;
+                    ?? OnSessionErrorAsync;
 
                 _packageHandlingScheduler = serviceProvider.GetService<IPackageHandlingScheduler<TReceivePackageInfo>>()
-                                            ?? new SerialPackageHandlingScheduler<TReceivePackageInfo>();
+                    ?? new SerialPackageHandlingScheduler<TReceivePackageInfo>();
                 _packageHandlingScheduler.Initialize(packageHandler, errorHandler);
             }
         }
 
         protected virtual IPipelineFilterFactory<TReceivePackageInfo> GetPipelineFilterFactory()
         {
-            return _serviceProvider.GetRequiredService<IPipelineFilterFactory<TReceivePackageInfo>>();
+            var filterFactory = _serviceProvider.GetRequiredService<IPipelineFilterFactory<TReceivePackageInfo>>();
+
+            if (Options.EnableProxyProtocol)
+            {
+                filterFactory = new ProxyProtocolPipelineFilterFactory<TReceivePackageInfo>(filterFactory);
+            }
+
+            return filterFactory;
         }
 
         private bool AddConnectionListener(ListenOptions listenOptions, ServerOptions serverOptions)
@@ -150,7 +180,7 @@ namespace GameFrameX.SuperSocket.Server
 
                 if (!AddConnectionListener(null, serverOptions))
                 {
-                    _logger.LogError($"Failed to add the channel creator.");
+                    _logger.LogError($"Failed to add the connection creator.");
                     return Task.FromResult(false);
                 }
             }
@@ -193,11 +223,6 @@ namespace GameFrameX.SuperSocket.Server
             _middlewares = _serviceProvider.GetServices<IMiddleware>()
                 .OrderBy(m => m.Order)
                 .ToArray();
-
-            foreach (var m in _middlewares)
-            {
-                m.Start(this);
-            }
         }
 
         private void ShutdownMiddlewares()
@@ -280,7 +305,7 @@ namespace GameFrameX.SuperSocket.Server
                 return false;
             }
 
-            connection.Closed += (s, e) => OnChannelClosed(session, e);
+            connection.Closed += (s, e) => OnConnectionClosed(session, e);
             return true;
         }
 
@@ -295,7 +320,7 @@ namespace GameFrameX.SuperSocket.Server
             return new ValueTask();
         }
 
-        private void OnChannelClosed(IAppSession session, CloseEventArgs e)
+        private void OnConnectionClosed(IAppSession session, CloseEventArgs e)
         {
             FireSessionClosedEvent(session as AppSession, e.Reason).DoNotAwait();
         }
@@ -308,7 +333,7 @@ namespace GameFrameX.SuperSocket.Server
                 return closedHandler.Invoke(session, e);
 
 #if NETSTANDARD2_1
-                return GetCompletedTask();
+            return GetCompletedTask();
 #else
             return ValueTask.CompletedTask;
 #endif
@@ -391,6 +416,7 @@ namespace GameFrameX.SuperSocket.Server
 #if NET6_0_OR_GREATER
                 using var cancellationTokenSource = GetPackageHandlingCancellationTokenSource(connection.ConnectionToken);
 #endif
+                ValueTask prevPackageHandlingTask = ValueTask.CompletedTask;
 
                 await foreach (var p in packageStream)
                 {
@@ -402,7 +428,12 @@ namespace GameFrameX.SuperSocket.Server
 #if !NET6_0_OR_GREATER
                     using var cancellationTokenSource = GetPackageHandlingCancellationTokenSource(connection.ConnectionToken);
 #endif
-                    await packageHandlingScheduler.HandlePackage(session, p, cancellationTokenSource.Token);
+                    if (prevPackageHandlingTask != ValueTask.CompletedTask)
+                    {
+                        await prevPackageHandlingTask;
+                    }
+
+                    prevPackageHandlingTask = packageHandlingScheduler.HandlePackage(session, p, cancellationTokenSource.Token);
 
 #if NET6_0_OR_GREATER
                     cancellationTokenSource.TryReset();
@@ -428,22 +459,32 @@ namespace GameFrameX.SuperSocket.Server
             return new ValueTask<bool>(true);
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        /// <summary>
+        /// Starts the SuperSocket service asynchronously.
+        /// </summary>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        public async Task<bool> StartAsync(CancellationToken cancellationToken)
         {
             var state = _state;
 
-            if (state != ServerState.None && state != ServerState.Stopped)
+            if (state != ServerState.None && state != ServerState.Stopped && state != ServerState.Failed)
             {
                 throw new InvalidOperationException($"The server cannot be started right now, because its state is {state}.");
             }
 
             _state = ServerState.Starting;
 
+            foreach (var m in _middlewares)
+            {
+                m.Start(this);
+            }
+
             if (!await StartListenAsync(cancellationToken))
             {
                 _state = ServerState.Failed;
                 _logger.LogError("Failed to start any listener.");
-                return;
+                return false;
             }
 
             _state = ServerState.Started;
@@ -456,12 +497,14 @@ namespace GameFrameX.SuperSocket.Server
             {
                 _logger.LogError(e, "There is one exception thrown from the method OnStartedAsync().");
             }
+
+            return true;
         }
 
         protected virtual ValueTask OnStartedAsync()
         {
 #if NETSTANDARD2_1
-                return GetCompletedTask();
+            return GetCompletedTask();
 #else
             return ValueTask.CompletedTask;
 #endif
@@ -470,7 +513,7 @@ namespace GameFrameX.SuperSocket.Server
         protected virtual ValueTask OnStopAsync()
         {
 #if NETSTANDARD2_1
-                return GetCompletedTask();
+            return GetCompletedTask();
 #else
             return ValueTask.CompletedTask;
 #endif
@@ -482,6 +525,11 @@ namespace GameFrameX.SuperSocket.Server
             _logger.LogInformation($"The listener [{listener}] has been stopped.");
         }
 
+        /// <summary>
+        /// Stops the SuperSocket service asynchronously.
+        /// </summary>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             var state = _state;
@@ -510,19 +558,15 @@ namespace GameFrameX.SuperSocket.Server
             _state = ServerState.Stopped;
         }
 
-        async Task<bool> IServer.StartAsync()
+        async Task IHostedService.StartAsync(CancellationToken cancellationToken)
         {
-            await StartAsync(CancellationToken.None);
-            return true;
-        }
-
-        async Task IServer.StopAsync()
-        {
-            await StopAsync(CancellationToken.None);
+            if (!await StartAsync(cancellationToken))
+            {
+                throw new Exception("Failed to start the server.");
+            }
         }
 
         #region IDisposable Support
-
         private bool disposedValue = false; // To detect redundant calls
 
         ValueTask IAsyncDisposable.DisposeAsync() => DisposeAsync(true);
@@ -543,6 +587,16 @@ namespace GameFrameX.SuperSocket.Server
                     catch (Exception e)
                     {
                         _logger.LogError(e, "Failed to stop the server");
+                    }
+
+                    var connectionListeners = _connectionListeners;
+
+                    if (connectionListeners != null && connectionListeners.Any())
+                    {
+                        foreach (var listener in connectionListeners)
+                        {
+                            listener.Dispose();
+                        }
                     }
                 }
 

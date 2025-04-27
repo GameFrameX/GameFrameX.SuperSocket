@@ -46,7 +46,7 @@ public class WebSocketHostBuilder : SuperSocketHostBuilder<WebSocketPackage>
     internal WebSocketHostBuilder(string[] args)
         : base(args)
     {
-        this.ConfigureSupplementServices(ValidateHostBuilder);
+        this.ConfigureSupplementServices(WebSocketHostBuilder.ValidateHostBuilder);
     }
 
     protected override void RegisterDefaultServices(HostBuilderContext builderContext, IServiceCollection servicesInHost, IServiceCollection services)
@@ -65,16 +65,16 @@ public class WebSocketHostBuilder : SuperSocketHostBuilder<WebSocketPackage>
         return Create(new WebSocketHostBuilder(args));
     }
 
-    public static WebSocketHostBuilder Create(SuperSocketHostBuilder<WebSocketPackage> hostBuilder)
-    {
-        return hostBuilder.UsePipelineFilter<WebSocketPipelineFilter>()
-            .UseWebSocketMiddleware()
-            .ConfigureServices((ctx, services) => { services.AddSingleton<IPackageHandler<WebSocketPackage>, WebSocketPackageHandler>(); }) as WebSocketHostBuilder;
-    }
-
     public static WebSocketHostBuilder Create(IHostBuilder hostBuilder)
     {
         return Create(new WebSocketHostBuilder(hostBuilder));
+    }
+
+    public static WebSocketHostBuilder Create(SuperSocketHostBuilder<WebSocketPackage> hostBuilder)
+    {
+        return hostBuilder.UsePipelineFilter<WebSocketPipelineFilter>()
+                          .UseWebSocketMiddleware()
+                          .ConfigureServices((ctx, services) => { services.AddSingleton<IPackageHandler<WebSocketPackage>, WebSocketPackageHandler>(); }) as WebSocketHostBuilder;
     }
 
     internal static void ValidateHostBuilder(HostBuilderContext builderCtx, IServiceCollection services)

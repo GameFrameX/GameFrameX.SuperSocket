@@ -13,20 +13,17 @@ namespace GameFrameX.SuperSocket.Server.Abstractions.Host
             return hostBuilder as ISuperSocketHostBuilder;
         }
 
-        public static ISuperSocketHostBuilder UseMiddleware<TMiddleware>(this ISuperSocketHostBuilder builder)
-            where TMiddleware : class, IMiddleware
+        public static ISuperSocketHostBuilder UseMiddleware<TMiddleware>(this ISuperSocketHostBuilder builder) where TMiddleware : class, IMiddleware
         {
             return builder.ConfigureServices((ctx, services) => { services.TryAddEnumerable(ServiceDescriptor.Singleton<IMiddleware, TMiddleware>()); }).AsSuperSocketBuilder();
         }
 
-        public static ISuperSocketHostBuilder UseMiddleware<TMiddleware>(this ISuperSocketHostBuilder builder, Func<IServiceProvider, TMiddleware> implementationFactory)
-            where TMiddleware : class, IMiddleware
+        public static ISuperSocketHostBuilder UseMiddleware<TMiddleware>(this ISuperSocketHostBuilder builder, Func<IServiceProvider, TMiddleware> implementationFactory) where TMiddleware : class, IMiddleware
         {
             return builder.ConfigureServices((ctx, services) => { services.TryAddEnumerable(ServiceDescriptor.Singleton<IMiddleware, TMiddleware>(implementationFactory)); }).AsSuperSocketBuilder();
         }
 
-        public static ISuperSocketHostBuilder UseTcpConnectionListenerFactory<TConnectionListenerFactory>(this ISuperSocketHostBuilder builder)
-            where TConnectionListenerFactory : class, IConnectionListenerFactory
+        public static ISuperSocketHostBuilder UseTcpConnectionListenerFactory<TConnectionListenerFactory>(this ISuperSocketHostBuilder builder) where TConnectionListenerFactory : class, IConnectionListenerFactory
         {
             return builder.ConfigureServices((ctx, services) => { services.AddSingleton<IConnectionListenerFactory, TConnectionListenerFactory>(); }).AsSuperSocketBuilder();
         }

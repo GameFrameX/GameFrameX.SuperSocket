@@ -194,7 +194,7 @@ namespace GameFrameX.SuperSocket.Udp
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Failed to create channel for {socket.RemoteEndPoint}.");
+                _logger.LogError(e, $"Failed to create connection for {socket.RemoteEndPoint}.");
                 return null;
             }
         }
@@ -225,5 +225,13 @@ namespace GameFrameX.SuperSocket.Udp
         {
             return Options?.ToString();
         }
+        public void Dispose()
+        {
+            var listenSocket = _listenSocket;
+            if (listenSocket != null && Interlocked.CompareExchange(ref _listenSocket, null, listenSocket) == listenSocket)
+            {
+                listenSocket.Dispose();
+            }
+        } 
     }
 }

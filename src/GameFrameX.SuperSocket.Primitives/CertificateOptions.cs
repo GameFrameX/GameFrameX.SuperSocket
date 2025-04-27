@@ -3,67 +3,49 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace GameFrameX.SuperSocket.Primitives
 {
+    /// <summary>
+    /// Represents configuration options for loading an X.509 certificate.
+    /// </summary>
     public class CertificateOptions
     {
-        public X509Certificate Certificate { get; set; }
-
-
         /// <summary>
-        /// Gets the certificate file path (pfx).
+        /// Gets or sets the certificate file path (pfx).
         /// </summary>
         public string FilePath { get; set; }
 
         /// <summary>
-        /// Gets the password.
+        /// Gets or sets the password for the certificate file.
         /// </summary>
         public string Password { get; set; }
 
         /// <summary>
-        /// Gets the the store where certificate locates.
+        /// Gets or sets the name of the store where the certificate is located.
         /// </summary>
-        /// <value>
-        /// The name of the store.
-        /// </value>
-        public string StoreName { get; set; } = "My"; //The X.509 certificate store for personal certificates.
+        public string StoreName { get; set; } = "My"; // The X.509 certificate store for personal certificates.
 
         /// <summary>
-        /// Gets the thumbprint.
+        /// Gets or sets the thumbprint of the certificate.
         /// </summary>
         public string Thumbprint { get; set; }
 
-
         /// <summary>
-        /// Gets the store location of the certificate.
+        /// Gets or sets the store location of the certificate.
         /// </summary>
-        /// <value>
-        /// The store location.
-        /// </value>
-        public StoreLocation StoreLocation { get; set; } = StoreLocation.CurrentUser; //The X.509 certificate store used by the current user.
-
+        public StoreLocation StoreLocation { get; set; } = StoreLocation.CurrentUser; // The X.509 certificate store used by the current user.
 
         /// <summary>
-        /// Gets a value indicating whether [client certificate required].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [client certificate required]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ClientCertificateRequired { get; set; }
-
-        /// <summary>
-        /// Gets a value that will be used to instantiate the X509Certificate2 object in the CertificateManager
+        /// Gets or sets the key storage flags used to instantiate the X509Certificate2 object.
         /// </summary>
         public X509KeyStorageFlags KeyStorageFlags { get; set; }
 
-
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
-
-        public void EnsureCertificate()
+        /// <summary>
+        /// Retrieves the X.509 certificate based on the specified options.
+        /// </summary>
+        /// <returns>The loaded <see cref="X509Certificate"/>.</returns>
+        /// <exception cref="Exception">Thrown if neither <see cref="FilePath"/> nor <see cref="Thumbprint"/> is provided.</exception>
+        public X509Certificate GetCertificate()
         {
-            // The certificate is there already
-            if (Certificate != null)
-                return;
-
-            // load certificate from pfx file
+            // Load certificate from pfx file
             if (!string.IsNullOrEmpty(FilePath))
             {
                 string filePath = FilePath;
@@ -73,18 +55,16 @@ namespace GameFrameX.SuperSocket.Primitives
                     filePath = Path.Combine(AppContext.BaseDirectory, filePath);
                 }
 
-                Certificate = new X509Certificate2(filePath, Password, KeyStorageFlags);
+                return new X509Certificate2(filePath, Password, KeyStorageFlags);
             }
-            else if (!string.IsNullOrEmpty(Thumbprint)) // load certificate from certificate store
+            else if (!string.IsNullOrEmpty(Thumbprint)) // Load certificate from certificate store
             {
-                var store = new X509Store((StoreName)Enum.Parse(typeof(StoreName), StoreName), StoreLocation);
+                using var store = new X509Store((StoreName)Enum.Parse(typeof(StoreName), StoreName), StoreLocation);
 
                 store.Open(OpenFlags.ReadOnly);
 
-                Certificate = store.Certificates.OfType<X509Certificate2>()
-                    .FirstOrDefault(c => c.Thumbprint.Equals(Thumbprint, StringComparison.OrdinalIgnoreCase));
-
-                store.Close();
+                return store.Certificates.OfType<X509Certificate2>()
+                            .FirstOrDefault(c => c.Thumbprint.Equals(Thumbprint, StringComparison.OrdinalIgnoreCase));
             }
             else
             {

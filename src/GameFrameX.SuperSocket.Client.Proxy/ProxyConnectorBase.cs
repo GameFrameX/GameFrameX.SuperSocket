@@ -36,7 +36,7 @@ namespace GameFrameX.SuperSocket.Client.Proxy
                 };
             }
 
-            return await ConnectProxyAsync(remoteEndPoint, state, cancellationToken);
+            return await ConnectProxyAsync(remoteEndPoint, result, cancellationToken);
         }
     }
 }

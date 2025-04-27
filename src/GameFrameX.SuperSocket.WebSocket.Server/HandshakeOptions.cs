@@ -21,5 +21,8 @@ public class HandshakeOptions
     public int CloseHandshakeTimeOut { get; set; } = 120;
 
 
+    /// <summary>
+    ///     Gets or sets the handshake validator.
+    /// </summary>
     public Func<WebSocketSession, WebSocketPackage, ValueTask<bool>> HandshakeValidator { get; set; }
 }

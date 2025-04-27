@@ -18,17 +18,26 @@ public class WebSocketPerMessageCompressionExtensionFactory : IWebSocketExtensio
         _supportedOptions.Add("client_no_context_takeover", string.Empty);
     }
 
-    public string Name => WebSocketPerMessageCompressionExtension.PMCE;
+    public string Name
+    {
+        get { return WebSocketPerMessageCompressionExtension.PMCE; }
+    }
 
     public IWebSocketExtension Create(NameValueCollection options, out NameValueCollection supportedOptions)
     {
         supportedOptions = _supportedOptions;
 
         if (options != null && options.Count > 0)
+        {
             foreach (var key in options.AllKeys)
+            {
                 if (key.StartsWith("server_", StringComparison.OrdinalIgnoreCase))
+                {
                     if (!string.IsNullOrEmpty(options.Get(key)))
                         return null;
+                }
+            }
+        }
 
         return new WebSocketPerMessageCompressionExtension();
     }

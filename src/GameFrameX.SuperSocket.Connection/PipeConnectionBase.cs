@@ -1,20 +1,29 @@
 ﻿using System.Buffers;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using GameFrameX.SuperSocket.ProtoBase;
+using GameFrameX.SuperSocket.ProtoBase.ProxyProtocol;
 using Microsoft.Extensions.Logging;
 
 namespace GameFrameX.SuperSocket.Connection
 {
+    /// <summary>
+    /// Provides a base class for pipe-based connections, implementing common connection functionality.
+    /// </summary>
     public abstract partial class PipeConnectionBase : ConnectionBase, IConnection, IPipeConnection
     {
         private CancellationTokenSource _cts = new CancellationTokenSource();
 
         private IPipelineFilter _pipelineFilter;
 
-        private IObjectPipe _packagePipe;
-
+        /// <summary>
+        /// Gets the semaphore used to synchronize send operations.
+        /// </summary>
         protected SemaphoreSlim SendLock { get; } = new SemaphoreSlim(1, 1);
 
+        /// <summary>
+        /// Gets the pipe writer for output data.
+        /// </summary>
         protected PipeWriter OutputWriter { get; }
 
         PipeWriter IPipeConnection.OutputWriter
@@ -22,6 +31,9 @@ namespace GameFrameX.SuperSocket.Connection
             get { return OutputWriter; }
         }
 
+        /// <summary>
+        /// Gets the pipe reader for input data.
+        /// </summary>
         protected PipeReader InputReader { get; }
 
         PipeReader IPipeConnection.InputReader
@@ -34,14 +46,26 @@ namespace GameFrameX.SuperSocket.Connection
             get { return _pipelineFilter; }
         }
 
+        /// <summary>
+        /// Gets the logger used for logging connection events.
+        /// </summary>
         protected ILogger Logger { get; }
 
+        /// <summary>
+        /// Gets the connection options.
+        /// </summary>
         protected ConnectionOptions Options { get; }
 
-        private Task _pipeTask;
+        private Task _connectionTask;
 
         private bool _isDetaching = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PipeConnectionBase"/> class with the specified input and output pipes and connection options.
+        /// </summary>
+        /// <param name="inputReader">The pipe reader for input data.</param>
+        /// <param name="outputWriter">The pipe writer for output data.</param>
+        /// <param name="options">The connection options.</param>
         protected PipeConnectionBase(PipeReader inputReader, PipeWriter outputWriter, ConnectionOptions options)
         {
             Options = options;
@@ -51,90 +75,127 @@ namespace GameFrameX.SuperSocket.Connection
             ConnectionToken = _cts.Token;
         }
 
-        protected virtual Task StartTask<TPackageInfo>(IObjectPipe<TPackageInfo> packagePipe)
-        {
-            return StartInputPipeTask(packagePipe, _cts.Token);
-        }
-
+        /// <summary>
+        /// Updates the last active time of the connection to the current time.
+        /// </summary>
         protected void UpdateLastActiveTime()
         {
             LastActiveTime = DateTimeOffset.Now;
         }
 
-        public override async IAsyncEnumerable<TPackageInfo> RunAsync<TPackageInfo>(IPipelineFilter<TPackageInfo> pipelineFilter)
+        /// <summary>
+        /// Gets a task which represents the connection.
+        /// </summary>
+        /// <param name="readTask">The read task.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        protected virtual async Task GetConnectionTask(Task readTask, CancellationToken cancellationToken)
         {
-            var packagePipe = !Options.ReadAsDemand
-                                  ? new DefaultObjectPipe<TPackageInfo>()
-                                  : new DefaultObjectPipeWithSupplyControl<TPackageInfo>();
+            await readTask.ConfigureAwait(false);
+            FireClose();
+        }
 
-            _packagePipe = packagePipe;
+        /// <summary>
+        /// Runs the connection asynchronously with the specified pipeline filter.
+        /// </summary>
+        /// <typeparam name="TPackageInfo">The type of the package information.</typeparam>
+        /// <param name="pipelineFilter">The pipeline filter to use for processing data.</param>
+        /// <returns>An asynchronous enumerable of package information.</returns>
+        public async override IAsyncEnumerable<TPackageInfo> RunAsync<TPackageInfo>(IPipelineFilter<TPackageInfo> pipelineFilter)
+        {
             _pipelineFilter = pipelineFilter;
 
-            _pipeTask = StartTask(packagePipe);
+            var readTaskCompletionSource = new TaskCompletionSource();
 
-            _ = HandleClosing();
+            _cts.Token.Register(() => { readTaskCompletionSource.TrySetResult(); });
 
-            while (!_cts.IsCancellationRequested)
+            _connectionTask = GetConnectionTask(readTaskCompletionSource.Task, _cts.Token);
+
+            var packagePipeEnumerator = ReadPipeAsync<TPackageInfo>(InputReader, _cts.Token).GetAsyncEnumerator(_cts.Token);
+
+            while (true)
             {
-                var package = await packagePipe.ReadAsync().ConfigureAwait(false);
+                var read = false;
 
-                if (package == null)
+                try
                 {
-                    yield break;
+                    read = await packagePipeEnumerator.MoveNextAsync().ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception e)
+                {
+                    OnError("Unhandled exception in the method PipeConnection.Run.", e);
+                    break;
                 }
 
-                yield return package;
+                if (read)
+                {
+                    yield return packagePipeEnumerator.Current;
+                    continue;
+                }
+
+                break;
             }
 
-            //How do empty a pipe?
+            readTaskCompletionSource.TrySetResult();
+
+            yield break;
         }
 
-        private async ValueTask HandleClosing()
+        private void FireClose()
         {
-            try
+            if (!_isDetaching && !IsClosed)
             {
-                if (_pipeTask != null)
-                    await _pipeTask.ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception e)
-            {
-                OnError("Unhandled exception in the method PipeChannel.Run.", e);
-            }
-            finally
-            {
-                if (!_isDetaching && !IsClosed)
+                try
                 {
-                    try
-                    {
-                        Close();
-                        OnClosed();
-                    }
-                    catch (Exception exc)
-                    {
-                        if (!IsIgnorableException(exc))
-                            OnError("Unhandled exception in the method PipeChannel.Close.", exc);
-                    }
+                    Close();
+                    OnClosed();
+                }
+                catch (Exception exc)
+                {
+                    if (!IsIgnorableException(exc))
+                        OnError("Unhandled exception in the method PipeConnection.Close.", exc);
                 }
             }
         }
 
+        /// <summary>
+        /// Closes the connection and releases associated resources.
+        /// </summary>
         protected abstract void Close();
 
+        /// <summary>
+        /// Closes the connection asynchronously with the specified reason.
+        /// </summary>
+        /// <param name="closeReason">The reason for closing the connection.</param>
+        /// <returns>A task that represents the asynchronous close operation.</returns>
         public override async ValueTask CloseAsync(CloseReason closeReason)
         {
             CloseReason = closeReason;
-            Cancel();
-            await HandleClosing().ConfigureAwait(false);
+            await CancelAsync().ConfigureAwait(false);
+
+            if (_connectionTask is Task connectionTask)
+                await connectionTask.ConfigureAwait(false);
         }
 
-        protected void Cancel()
+        /// <summary>
+        /// Cancels all the operations on the connection.
+        /// </summary>
+        protected async Task CancelAsync()
         {
+            if (_cts.IsCancellationRequested)
+                return;
+
             _cts.Cancel();
+            await CompleteWriterAsync(OutputWriter, _isDetaching).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Checks if the specified exception is ignorable.
+        /// </summary>
+        /// <param name="e">The exception.</param>
         protected virtual bool IsIgnorableException(Exception e)
         {
             if (e is ObjectDisposedException || e is NullReferenceException)
@@ -146,78 +207,129 @@ namespace GameFrameX.SuperSocket.Connection
             return false;
         }
 
-        protected virtual Task StartInputPipeTask<TPackageInfo>(IObjectPipe<TPackageInfo> packagePipe, CancellationToken cancellationToken)
-        {
-            return ReadPipeAsync(InputReader, packagePipe, cancellationToken);
-        }
-
-        private void CheckConnectionOpen()
+        private void CheckConnectionSendAllowed()
         {
             if (this.IsClosed)
             {
-                throw new Exception("Channel is closed now, send is not allowed.");
+                throw new Exception("Connection is closed now, send is not allowed.");
+            }
+
+            if (_cts.IsCancellationRequested)
+            {
+                throw new Exception("The communication over this connection is being closed, send is not allowed.");
             }
         }
 
+        /// <summary>
+        /// Sends data over the connection asynchronously using the specified buffer.
+        /// </summary>
+        /// <param name="buffer">The buffer containing the data to send.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
         public override async ValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
+            var sendLockAcquired = false;
+
             try
             {
                 await SendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                sendLockAcquired = true;
                 WriteBuffer(OutputWriter, buffer);
                 await OutputWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                SendLock.Release();
+                if (sendLockAcquired)
+                    SendLock.Release();
             }
         }
 
         private void WriteBuffer(PipeWriter writer, ReadOnlyMemory<byte> buffer)
         {
-            CheckConnectionOpen();
+            CheckConnectionSendAllowed();
             writer.Write(buffer.Span);
         }
 
+        /// <summary>
+        /// Sends a package over the connection asynchronously using the specified encoder and package.
+        /// </summary>
+        /// <typeparam name="TPackage">The type of the package to send.</typeparam>
+        /// <param name="packageEncoder">The encoder to use for the package.</param>
+        /// <param name="package">The package to send.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
         public override async ValueTask SendAsync<TPackage>(IPackageEncoder<TPackage> packageEncoder, TPackage package, CancellationToken cancellationToken = default)
         {
+            var sendLockAcquired = false;
+
             try
             {
                 await SendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                sendLockAcquired = true;
                 WritePackageWithEncoder<TPackage>(OutputWriter, packageEncoder, package);
                 await OutputWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                SendLock.Release();
+                if (sendLockAcquired)
+                    SendLock.Release();
             }
         }
 
-        public override async ValueTask SendAsync(Action<PipeWriter> write, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Sends data over the connection asynchronously using a custom write action.
+        /// </summary>
+        /// <param name="write">The action to write data to the pipe writer.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
+        public override async ValueTask SendAsync(Action<PipeWriter> write, CancellationToken cancellationToken)
         {
+            CheckConnectionSendAllowed();
+
+            var sendLockAcquired = false;
+
             try
             {
                 await SendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                sendLockAcquired = true;
                 write(OutputWriter);
                 await OutputWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                SendLock.Release();
+                if (sendLockAcquired)
+                    SendLock.Release();
             }
         }
 
+        /// <summary>
+        /// Writes a package to the output writer using the specified encoder.
+        /// </summary>
+        /// <typeparam name="TPackage">The package type.</typeparam>
+        /// <param name="writer">The buffer writer.</param>
+        /// <param name="packageEncoder">The package encoder.</param>
+        /// <param name="package">The package.</param>
         protected void WritePackageWithEncoder<TPackage>(IBufferWriter<byte> writer, IPackageEncoder<TPackage> packageEncoder, TPackage package)
         {
-            CheckConnectionOpen();
+            CheckConnectionSendAllowed();
             packageEncoder.Encode(writer, package);
         }
 
+        /// <summary>
+        /// Invoked when data is read from the input pipe.
+        /// </summary>
+        /// <param name="result">The read result.</param>
         protected virtual void OnInputPipeRead(ReadResult result)
         {
         }
 
-        protected async Task ReadPipeAsync<TPackageInfo>(PipeReader reader, IObjectPipe<TPackageInfo> packagePipe, CancellationToken cancellationToken)
+        /// <summary>
+        /// Reads data from the input pipe asynchronously and processes it using the specified pipeline filter.
+        /// </summary>
+        /// <typeparam name="TPackageInfo">The package type.</typeparam>
+        /// <param name="reader">The pipe reader.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        protected async IAsyncEnumerable<TPackageInfo> ReadPipeAsync<TPackageInfo>(PipeReader reader, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var pipelineFilter = _pipelineFilter as IPipelineFilter<TPackageInfo>;
 
@@ -240,154 +352,211 @@ namespace GameFrameX.SuperSocket.Connection
 
                 var buffer = result.Buffer;
 
-                SequencePosition consumed = buffer.Start;
-                SequencePosition examined = buffer.End;
+                SequencePosition consumed = buffer.End;
 
-                if (result.IsCanceled)
+                var completedOrCancelled = result.IsCompleted || result.IsCanceled;
+
+                if (buffer.Length > 0)
                 {
-                    break;
-                }
+                    BufferFilterResult<TPackageInfo> lastFilterResult = default;
 
-                var completed = result.IsCompleted;
-
-                try
-                {
-                    if (buffer.Length > 0)
+                    foreach (var bufferFilterResult in ReadBuffer(buffer, pipelineFilter))
                     {
-                        var needReadMore = ReaderBuffer(ref buffer, pipelineFilter, packagePipe, out consumed, out examined, out var currentPipelineFilter);
+                        lastFilterResult = bufferFilterResult;
 
-                        if (currentPipelineFilter != null)
+                        if (bufferFilterResult.Package != null)
                         {
-                            pipelineFilter = currentPipelineFilter;
+                            yield return bufferFilterResult.Package;
                         }
 
-                        if (!needReadMore)
+                        if (bufferFilterResult.Exception != null)
                         {
-                            completed = true;
+                            OnError("Protocol error", bufferFilterResult.Exception);
+                            CloseReason = SuperSocket.Connection.CloseReason.ProtocolError;
+                            Close();
+                            completedOrCancelled = true;
                             break;
                         }
                     }
 
-                    if (completed)
+                    pipelineFilter = _pipelineFilter as IPipelineFilter<TPackageInfo>;
+
+                    if (lastFilterResult.Consumed > 0)
                     {
-                        break;
+                        consumed = buffer.GetPosition(lastFilterResult.Consumed);
+                        reader.AdvanceTo(consumed, buffer.End);
+                    }
+                    else
+                    {
+                        reader.AdvanceTo(buffer.Start, buffer.End);
                     }
                 }
-                catch (Exception e)
+
+                if (completedOrCancelled)
                 {
-                    OnError("Protocol error", e);
-                    // close the connection if get a protocol error
-                    CloseReason = Connection.CloseReason.ProtocolError;
-                    Close();
                     break;
-                }
-                finally
-                {
-                    reader.AdvanceTo(consumed, examined);
                 }
             }
 
-            await reader.CompleteAsync();
-            WriteEofPackage();
+            await CompleteReaderAsync(reader, _isDetaching).ConfigureAwait(false);
+            yield break;
         }
 
-        protected void WriteEofPackage()
+        private IEnumerable<BufferFilterResult<TPackageInfo>> ReadBuffer<TPackageInfo>(ReadOnlySequence<byte> buffer, IPipelineFilter<TPackageInfo> pipelineFilter)
         {
-            _packagePipe.WriteEOF();
-        }
-
-        private bool ReaderBuffer<TPackageInfo>(ref ReadOnlySequence<byte> buffer, IPipelineFilter<TPackageInfo> pipelineFilter, IObjectPipe<TPackageInfo> packagePipe, out SequencePosition consumed, out SequencePosition examined, out IPipelineFilter<TPackageInfo> currentPipelineFilter)
-        {
-            consumed = buffer.Start;
-            examined = buffer.End;
-
             var bytesConsumedTotal = 0L;
-
             var maxPackageLength = Options.MaxPackageLength;
-
-            var seqReader = new SequenceReader<byte>(buffer);
 
             while (true)
             {
                 var prevPipelineFilter = pipelineFilter;
                 var filterSwitched = false;
 
-                var packageInfo = pipelineFilter.Filter(ref seqReader);
+                TPackageInfo packageInfo = default;
+
+                Exception exception = null;
+
+                var readerConsumed = 0L;
+                var readerEnd = false;
+
+                try
+                {
+                    var seqReader = new SequenceReader<byte>(buffer);
+                    packageInfo = pipelineFilter.Filter(ref seqReader);
+                    readerConsumed = seqReader.Consumed;
+                    readerEnd = seqReader.End;
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+
+                if (exception != null)
+                {
+                    yield return new BufferFilterResult<TPackageInfo>(exception);
+                    yield break;
+                }
 
                 var nextFilter = pipelineFilter.NextFilter;
 
                 if (nextFilter != null)
                 {
+                    // ProxyProtocolPipelineFilter always is the first filter and its next filter is the actual first filter.
+                    if (bytesConsumedTotal == 0 && pipelineFilter is IProxyProtocolPipelineFilter proxyProtocolPipelineFilter)
+                    {
+                        ProxyInfo = proxyProtocolPipelineFilter.ProxyInfo;
+                    }
+
                     nextFilter.Context = pipelineFilter.Context; // pass through the context
                     _pipelineFilter = pipelineFilter = nextFilter;
                     filterSwitched = true;
                 }
 
-                currentPipelineFilter = pipelineFilter;
+                bytesConsumedTotal += readerConsumed;
 
-                var bytesConsumed = seqReader.Consumed;
-                bytesConsumedTotal += bytesConsumed;
-
-                var len = bytesConsumed;
+                var len = readerConsumed;
 
                 // nothing has been consumed, need more data
                 if (len == 0)
-                    len = seqReader.Length;
+                    len = buffer.Length;
 
                 if (maxPackageLength > 0 && len > maxPackageLength)
                 {
-                    OnError($"Package cannot be larger than {maxPackageLength}.");
-                    CloseReason = Connection.CloseReason.ProtocolError;
-                    // close the the connection directly
-                    Close();
-                    return false;
+                    yield return new BufferFilterResult<TPackageInfo>(new Exception($"Package cannot be larger than {maxPackageLength}."));
+                    yield break;
                 }
 
-                if (packageInfo == null)
+                if (packageInfo != null || filterSwitched)
                 {
-                    // the current pipeline filter needs more data to process
-                    if (!filterSwitched)
+                    // We should reset the previous pipeline filter after switch or parse one full package.
+                    prevPipelineFilter.Reset();
+                }
+
+                var needReadMore = readerEnd // has consumed all the data in the buffer
+                                   || (packageInfo == null // not parsed a full package yet
+                                       && !filterSwitched); // and not switch to another filter
+
+                if (!readerEnd && readerConsumed > 0)
+                    buffer = buffer.Slice(readerConsumed);
+
+                if (packageInfo != null || needReadMore)
+                {
+                    yield return new BufferFilterResult<TPackageInfo>(packageInfo, bytesConsumedTotal);
+
+                    if (needReadMore)
                     {
-                        // set consumed position and then continue to receive...
-                        consumed = buffer.GetPosition(bytesConsumedTotal);
-                        return true;
+                        yield break;
                     }
-
-                    // we should reset the previous pipeline filter after switch
-                    prevPipelineFilter.Reset();
                 }
-                else
-                {
-                    // reset the pipeline filter after we parse one full package
-                    prevPipelineFilter.Reset();
-                    packagePipe.Write(packageInfo);
-                }
-
-                if (seqReader.End) // no more data
-                {
-                    examined = consumed = buffer.End;
-                    return true;
-                }
-
-                if (bytesConsumed > 0)
-                    seqReader = new SequenceReader<byte>(seqReader.Sequence.Slice(bytesConsumed));
             }
         }
 
+        /// <summary>
+        /// Detaches the connection asynchronously.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous detach operation.</returns>
         public override async ValueTask DetachAsync()
         {
             _isDetaching = true;
-            Cancel();
-            await HandleClosing().ConfigureAwait(false);
+            await CancelAsync().ConfigureAwait(false);
+            await _connectionTask.ConfigureAwait(false);
             _isDetaching = false;
         }
 
+        /// <summary>
+        /// Handles errors that occur during connection operations.
+        /// </summary>
+        /// <param name="message">The error message.</param>
+        /// <param name="e">The exception that occurred, if any.</param>
         protected void OnError(string message, Exception e = null)
         {
             if (e != null)
                 Logger?.LogError(e, message);
             else
                 Logger?.LogError(message);
+        }
+
+        /// <summary>
+        /// Completes the reader asynchronously.
+        /// </summary>
+        /// <param name="reader">The pipe reader.</param>
+        /// <param name="isDetaching">Indicates if this operation is a part of detaching action.</param>
+        protected virtual async ValueTask CompleteReaderAsync(PipeReader reader, bool isDetaching)
+        {
+            await reader.CompleteAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Completes the writer asynchronously.
+        /// </summary>
+        /// <param name="writer">The pipe writer.</param>
+        /// <param name="isDetaching">Indicates if this operation is a part of detaching action.</param>
+        protected virtual async ValueTask CompleteWriterAsync(PipeWriter writer, bool isDetaching)
+        {
+            await writer.CompleteAsync().ConfigureAwait(false);
+        }
+
+        internal struct BufferFilterResult<TPackageInfo>
+        {
+            public Exception Exception { get; set; }
+
+            public TPackageInfo Package { get; set; }
+
+            public long Consumed { get; set; }
+
+            public BufferFilterResult(Exception exception)
+            {
+                Exception = exception;
+                Package = default;
+                Consumed = 0;
+            }
+
+            public BufferFilterResult(TPackageInfo packageInfo, long consumed = default)
+            {
+                Package = packageInfo;
+                Consumed = consumed;
+                Exception = null;
+            }
         }
     }
 }

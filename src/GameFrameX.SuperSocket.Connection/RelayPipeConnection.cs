@@ -5,7 +5,7 @@ namespace GameFrameX.SuperSocket.Connection
 {
     public class RelayPipeConnection : PipeConnection
     {
-        static ConnectionOptions RebuildOptionsWithPipes(ConnectionOptions options, Pipe pipeIn, Pipe pipeOut)
+        private static ConnectionOptions RebuildOptionsWithPipes(ConnectionOptions options, Pipe pipeIn, Pipe pipeOut)
         {
             options.Input = pipeIn;
             options.Output = pipeOut;
