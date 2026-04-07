@@ -61,7 +61,7 @@ namespace GameFrameX.SuperSocket.Connection
         /// <param name="memory">The memory buffer to fill with data.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        protected override ValueTask<int> FillPipeWithDataAsync(Memory<byte> memory, CancellationToken cancellationToken)
+        protected override ValueTask<int> FillInputPipeWithDataAsync(Memory<byte> memory, CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
         }
@@ -72,7 +72,7 @@ namespace GameFrameX.SuperSocket.Connection
         /// <param name="buffer">The buffer containing the data to send.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>The total number of bytes sent.</returns>
-        protected override async ValueTask<int> SendOverIoAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
+        protected override async ValueTask<int> SendOverIOAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
         {
             if (_enableSendingPipe || buffer.IsSingleSegment)
             {
@@ -152,7 +152,27 @@ namespace GameFrameX.SuperSocket.Connection
                 return;
             }
 
-            await SendOverIoAsync(new ReadOnlySequence<byte>(buffer), cancellationToken)
+            await SendOverIOAsync(new ReadOnlySequence<byte>(buffer), cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends data asynchronously using the specified buffer.
+        /// </summary>
+        /// <param name="buffer">The buffer containing the data to send.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public override async ValueTask SendAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
+        {
+            if (_enableSendingPipe)
+            {
+                await base
+                    .SendAsync(buffer, cancellationToken)
+                    .ConfigureAwait(false);
+                return;
+            }
+
+            await SendOverIOAsync(buffer, cancellationToken)
                 .ConfigureAwait(false);
         }
 

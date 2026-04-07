@@ -45,17 +45,17 @@ namespace GameFrameX.SuperSocket.Connection
         /// <param name="memory">The memory buffer to fill with data.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>The total number of bytes read.</returns>
-        protected override async ValueTask<int> FillPipeWithDataAsync(Memory<byte> memory, CancellationToken cancellationToken)
+        protected override async ValueTask<int> FillInputPipeWithDataAsync(Memory<byte> memory, CancellationToken cancellationToken)
         {
             return await ReceiveAsync(_socket, memory, SocketFlags.None, cancellationToken)
-                       .ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         private async ValueTask<int> ReceiveAsync(Socket socket, Memory<byte> memory, SocketFlags socketFlags, CancellationToken cancellationToken)
         {
             return await socket
-                         .ReceiveAsync(GetArrayByMemory(memory), socketFlags, cancellationToken)
-                         .ConfigureAwait(false);
+                .ReceiveAsync(GetArrayByMemory(memory), socketFlags, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace GameFrameX.SuperSocket.Connection
         /// <param name="buffer">The data to send.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>The total number of bytes sent.</returns>
-        protected override async ValueTask<int> SendOverIoAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
+        protected override async ValueTask<int> SendOverIOAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
         {
             var socketSenderPool = _socketSenderPool;
 

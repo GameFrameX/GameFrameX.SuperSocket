@@ -2,8 +2,16 @@ using System.Net.Sockets;
 
 namespace GameFrameX.SuperSocket.Connection
 {
+    /// <summary>
+    /// Provides extension methods for working with sockets.
+    /// </summary>
     public static class SocketExtensions
     {
+        /// <summary>
+        /// Determines whether the specified <see cref="SocketException"/> is ignorable.
+        /// </summary>
+        /// <param name="se">The <see cref="SocketException"/> to evaluate.</param>
+        /// <returns><c>true</c> if the exception is ignorable; otherwise, <c>false</c>.</returns>
         public static bool IsIgnorableSocketException(this SocketException se)
         {
             switch (se.SocketErrorCode)

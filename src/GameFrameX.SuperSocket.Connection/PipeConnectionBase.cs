@@ -178,6 +178,8 @@ namespace GameFrameX.SuperSocket.Connection
 
             if (_connectionTask is Task connectionTask)
                 await connectionTask.ConfigureAwait(false);
+            else // the communication over this connection has not been started yet, so fire the close event directly.
+                FireClose();
         }
 
         /// <summary>
@@ -244,10 +246,51 @@ namespace GameFrameX.SuperSocket.Connection
             }
         }
 
+        /// <summary>
+        /// Sends data over the connection asynchronously using the specified buffer.
+        /// </summary>
+        /// <param name="buffer">The buffer containing the data to send.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
+        public override async ValueTask SendAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            var sendLockAcquired = false;
+
+            try
+            {
+                await SendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                sendLockAcquired = true;
+                await WriteBufferAsync(OutputWriter, buffer).ConfigureAwait(false);
+                await OutputWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (sendLockAcquired)
+                    SendLock.Release();
+            }
+        }
+
         private void WriteBuffer(PipeWriter writer, ReadOnlyMemory<byte> buffer)
         {
             CheckConnectionSendAllowed();
             writer.Write(buffer.Span);
+        }
+
+        private async Task WriteBufferAsync(PipeWriter writer, ReadOnlySequence<byte> buffer)
+        {
+            CheckConnectionSendAllowed();
+            if (buffer.IsSingleSegment)
+            {
+                await writer.WriteAsync(buffer.First).ConfigureAwait(false);
+            }
+            else
+            {
+                foreach (var memory in buffer)
+                {
+                    await writer.WriteAsync(memory).ConfigureAwait(false);
+                    await writer.FlushAsync().ConfigureAwait(false);
+                }
+            }
         }
 
         /// <summary>
@@ -544,6 +587,11 @@ namespace GameFrameX.SuperSocket.Connection
 
             public long Consumed { get; set; }
 
+            public BufferFilterResult(TPackageInfo packageInfo)
+                : this(packageInfo, default)
+            {
+            }
+
             public BufferFilterResult(Exception exception)
             {
                 Exception = exception;
@@ -551,7 +599,7 @@ namespace GameFrameX.SuperSocket.Connection
                 Consumed = 0;
             }
 
-            public BufferFilterResult(TPackageInfo packageInfo, long consumed = default)
+            public BufferFilterResult(TPackageInfo packageInfo, long consumed)
             {
                 Package = packageInfo;
                 Consumed = consumed;

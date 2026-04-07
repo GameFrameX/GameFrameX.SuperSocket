@@ -62,7 +62,7 @@ namespace GameFrameX.SuperSocket.Connection
         /// <inheritdoc/>
         protected override async Task GetConnectionTask(Task readTask, CancellationToken cancellationToken)
         {
-            await Task.WhenAll(FillPipeAsync(Input.Writer, cancellationToken), ProcessSends()).ConfigureAwait(false);
+            await Task.WhenAll(FillInputPipeAsync(Input.Writer, cancellationToken), ProcessSends()).ConfigureAwait(false);
             await base.GetConnectionTask(readTask, cancellationToken).ConfigureAwait(false);
         }
 
@@ -88,12 +88,12 @@ namespace GameFrameX.SuperSocket.Connection
         }
 
         /// <summary>
-        /// Fills the pipe with data asynchronously.
+        /// Fills the input pipe with data received from the connection asynchronously.
         /// </summary>
-        /// <param name="writer">The pipe writer to write data to.</param>
+        /// <param name="writer">The input pipe writer for incoming data.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        internal virtual async Task FillPipeAsync(PipeWriter writer, CancellationToken cancellationToken)
+        internal virtual async Task FillInputPipeAsync(PipeWriter writer, CancellationToken cancellationToken)
         {
             var options = Options;
 
@@ -109,7 +109,7 @@ namespace GameFrameX.SuperSocket.Connection
 
                     var memory = writer.GetMemory(bufferSize);
 
-                    var bytesRead = await FillPipeWithDataAsync(memory, cancellationToken).ConfigureAwait(false);
+                    var bytesRead = await FillInputPipeWithDataAsync(memory, cancellationToken).ConfigureAwait(false);
 
                     if (bytesRead == 0)
                     {
@@ -183,7 +183,7 @@ namespace GameFrameX.SuperSocket.Connection
             {
                 try
                 {
-                    var sendTask = SendOverIoAsync(buffer, CancellationToken.None);
+                    var sendTask = SendOverIOAsync(buffer, CancellationToken.None);
 
                     if (sendTask.IsCompleted)
                     {
@@ -218,7 +218,7 @@ namespace GameFrameX.SuperSocket.Connection
         /// <param name="buffer">The buffer containing the data to send.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>The total number of bytes sent.</returns>
-        protected abstract ValueTask<int> SendOverIoAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken);
+        protected abstract ValueTask<int> SendOverIOAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets an array segment from the specified memory buffer.
@@ -256,11 +256,11 @@ namespace GameFrameX.SuperSocket.Connection
         }
 
         /// <summary>
-        /// Fills the pipe with data asynchronously.
+        /// Fills the input pipe with data received from the connection asynchronously.
         /// </summary>
         /// <param name="memory">The memory buffer to fill.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>The total number of bytes read.</returns>
-        protected abstract ValueTask<int> FillPipeWithDataAsync(Memory<byte> memory, CancellationToken cancellationToken);
+        protected abstract ValueTask<int> FillInputPipeWithDataAsync(Memory<byte> memory, CancellationToken cancellationToken);
     }
 }
