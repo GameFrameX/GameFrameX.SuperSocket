@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace GameFrameX.SuperSocket.ProtoBase
 {
     /// <summary>
@@ -6,25 +8,26 @@ namespace GameFrameX.SuperSocket.ProtoBase
     /// <typeparam name="TPackageInfo">The type of the package information.</typeparam>
     /// <typeparam name="TPipelineFilter">The type of the pipeline filter to create.</typeparam>
     public class DefaultPipelineFilterFactory<TPackageInfo, TPipelineFilter> : PipelineFilterFactoryBase<TPackageInfo>
-        where TPipelineFilter : IPipelineFilter<TPackageInfo>, new()
+        where TPipelineFilter : IPipelineFilter<TPackageInfo>
     {
+        private readonly IServiceProvider _serviceProvider;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultPipelineFilterFactory{TPackageInfo, TPipelineFilter}"/> class.
         /// </summary>
         /// <param name="serviceProvider">The service provider for dependency injection.</param>
         public DefaultPipelineFilterFactory(IServiceProvider serviceProvider)
-            : base(serviceProvider)
         {
+            this._serviceProvider = serviceProvider;
         }
 
         /// <summary>
         /// Creates a new instance of the specified pipeline filter type.
         /// </summary>
-        /// <param name="client">The client for which the pipeline filter is created.</param>
         /// <returns>The created pipeline filter.</returns>
-        protected override IPipelineFilter<TPackageInfo> CreateCore(object client)
+        protected override IPipelineFilter<TPackageInfo> Create()
         {
-            return new TPipelineFilter();
+            return _serviceProvider.GetRequiredService<TPipelineFilter>();
         }
     }
 }

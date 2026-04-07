@@ -10,17 +10,17 @@ namespace GameFrameX.SuperSocket.ProtoBase
         /// <summary>
         /// Indicates whether the object has been disposed.
         /// </summary>
-        private bool _disposedValue;
+        private bool disposedValue;
 
         /// <summary>
         /// The pooled buffer used by the segment.
         /// </summary>
-        private readonly byte[] _pooledBuffer;
+        private byte[] _pooledBuffer;
 
         /// <summary>
         /// Indicates whether the buffer is pooled.
         /// </summary>
-        private readonly bool _pooled = false;
+        private bool _pooled = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SequenceSegment"/> class with the specified buffer and length.
@@ -84,7 +84,7 @@ namespace GameFrameX.SuperSocket.ProtoBase
         /// <param name="disposing">Indicates whether the method is called from the Dispose method.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (!disposedValue)
             {
                 if (disposing)
                 {
@@ -94,7 +94,7 @@ namespace GameFrameX.SuperSocket.ProtoBase
                     }
                 }
 
-                _disposedValue = true;
+                disposedValue = true;
             }
         }
 

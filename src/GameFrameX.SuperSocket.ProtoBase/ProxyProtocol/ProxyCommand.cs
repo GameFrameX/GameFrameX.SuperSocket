@@ -1,5 +1,8 @@
 namespace GameFrameX.SuperSocket.ProtoBase.ProxyProtocol
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum ProxyCommand
     {
         /// <summary>
