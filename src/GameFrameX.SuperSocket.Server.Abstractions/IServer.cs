@@ -1,5 +1,8 @@
 namespace GameFrameX.SuperSocket.Server.Abstractions
 {
+    /// <summary>
+    /// Represents a server with start and stop capabilities.
+    /// </summary>
     public interface IServer : IServerInfo, IDisposable, IAsyncDisposable
     {
         /// <summary>

@@ -7,6 +7,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace GameFrameX.SuperSocket.Server.Abstractions
 {
+    /// <summary>
+    /// Represents a hosted service for SuperSocket.
+    /// </summary>
     public interface ISuperSocketHostedService : IHostedService, IServer, IConnectionRegister, ILoggerAccessor, ISessionEventHost
     {
     }
