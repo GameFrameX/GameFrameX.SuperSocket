@@ -59,12 +59,12 @@ namespace GameFrameX.SuperSocket.Primitives
             }
             else if (!string.IsNullOrEmpty(Thumbprint)) // Load certificate from certificate store
             {
-                using var store = new X509Store((StoreName)Enum.Parse(typeof(StoreName), StoreName), StoreLocation);
+                using var store = new X509Store(Enum.Parse<StoreName>(StoreName), StoreLocation);
 
                 store.Open(OpenFlags.ReadOnly);
 
                 return store.Certificates.OfType<X509Certificate2>()
-                            .FirstOrDefault(c => c.Thumbprint.Equals(Thumbprint, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(c => c.Thumbprint.Equals(Thumbprint, StringComparison.OrdinalIgnoreCase));
             }
             else
             {
