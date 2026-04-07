@@ -4,6 +4,9 @@ using GameFrameX.SuperSocket.Server.Abstractions.Session;
 
 namespace GameFrameX.SuperSocket.Command
 {
+    /// <summary>
+    /// Represents the context for executing a command.
+    /// </summary>
     public struct CommandExecutingContext
     {
         /// <summary>
@@ -29,6 +32,9 @@ namespace GameFrameX.SuperSocket.Command
         /// </value>
         public Exception Exception { get; set; }
 
+        /// <summary>
+        /// Gets the cancellation token.
+        /// </summary>
         public CancellationToken CancellationToken { get; set; }
     }
 }
