@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Net;
 using GameFrameX.SuperSocket.Connection;
 using GameFrameX.SuperSocket.Primitives;
@@ -38,9 +39,13 @@ namespace GameFrameX.SuperSocket.Server
         void IAppSession.Initialize(IServerInfo server, IConnection connection)
         {
             if (connection is IConnectionWithSessionIdentifier connectionWithSessionIdentifier)
-                SessionID = connectionWithSessionIdentifier.SessionIdentifier;
+            {
+                SessionId = connectionWithSessionIdentifier.SessionIdentifier;
+            }
             else
-                SessionID = Guid.NewGuid().ToString();
+            {
+                SessionId = Guid.NewGuid().ToString();
+            }
 
             Server = server;
             StartTime = DateTimeOffset.Now;
@@ -51,30 +56,8 @@ namespace GameFrameX.SuperSocket.Server
         /// <summary>
         /// Gets the session ID.
         /// </summary>
-        public string SessionID { get; private set; }
+        public string SessionId { get; private set; }
 
-
-        /// <summary>
-        /// Sends binary data asynchronously.
-        /// </summary>
-        /// <param name="data">The binary data to send.</param>
-        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-        /// <returns>A task that represents the asynchronous send operation.</returns>ly.
-        public virtual ValueTask SendAsync(byte[] data, CancellationToken cancellationToken = default)
-        {
-            return _connection.SendAsync(data, cancellationToken);
-        }
-
-        /// <summary>
-        /// Sends binary data asynchronously.
-        /// </summary>
-        /// <param name="data">The binary data to send.</param>
-        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-        /// <returns>A task that represents the asynchronous send operation.</returns>
-        public virtual ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
-        {
-            return _connection.SendAsync(data, cancellationToken);
-        }
 
         /// <summary>
         /// Gets the start time of the session.
@@ -192,15 +175,20 @@ namespace GameFrameX.SuperSocket.Server
         }
 
         /// <summary>
-        /// Closes the session.
+        /// Called when the session is closed.
         /// </summary>
-        /// <param name="e"></param>
-        /// <returns></returns>
+        /// <param name="e">The close event arguments containing the reason for closing.</param>
+        /// <returns>A task representing the async operation.</returns>
         protected virtual ValueTask OnSessionClosedAsync(CloseEventArgs e)
         {
             return new ValueTask();
         }
 
+        /// <summary>
+        /// Fires the session closed event.
+        /// </summary>
+        /// <param name="e">The close event arguments containing the reason for closing.</param>
+        /// <returns>A task representing the async operation.</returns>
         internal async ValueTask FireSessionClosedAsync(CloseEventArgs e)
         {
             State = SessionState.Closed;
@@ -216,11 +204,19 @@ namespace GameFrameX.SuperSocket.Server
         }
 
 
+        /// <summary>
+        /// Called when the session is connected.
+        /// </summary>
+        /// <returns>A task representing the async operation.</returns>
         protected virtual ValueTask OnSessionConnectedAsync()
         {
             return new ValueTask();
         }
 
+        /// <summary>
+        /// Fires the session connected event.
+        /// </summary>
+        /// <returns>A task representing the async operation.</returns>
         internal async ValueTask FireSessionConnectedAsync()
         {
             State = SessionState.Connected;
@@ -230,17 +226,62 @@ namespace GameFrameX.SuperSocket.Server
             var connectedEventHandler = Connected;
 
             if (connectedEventHandler == null)
+            {
                 return;
+            }
 
             await connectedEventHandler.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Sends binary data asynchronously.
+        /// </summary>
+        /// <param name="data">The binary data to send.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>ly.
+        public virtual ValueTask SendAsync(byte[] data, CancellationToken cancellationToken = default)
+        {
+            return _connection.SendAsync(data, cancellationToken);
+        }
 
-        ValueTask IAppSession.SendAsync<TPackage>(IPackageEncoder<TPackage> packageEncoder, TPackage package, CancellationToken cancellationToken)
+        /// <summary>
+        /// Sends binary data asynchronously.
+        /// </summary>
+        /// <param name="data">The binary data to send.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
+        public virtual ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+        {
+            return _connection.SendAsync(data, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends a sequence of binary data asynchronously using the connection.
+        /// </summary>
+        /// <param name="data">The sequence of binary data to send.</param>
+        /// <param name="cancellationToken">The token for canceling the operation.</param>
+        /// <returns>A task representing the asynchronous send operation.</returns>
+        public ValueTask SendAsync(ReadOnlySequence<byte> data, CancellationToken cancellationToken = default)
+        {
+            return _connection.SendAsync(data, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends a package to the client asynchronously.
+        /// </summary>
+        /// <typeparam name="TPackage">The type of the package.</typeparam>
+        /// <param name="packageEncoder">The encoder used to encode the package.</param>
+        /// <param name="package">The package to send.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A task representing the async send operation.</returns>
+        public ValueTask SendAsync<TPackage>(IPackageEncoder<TPackage> packageEncoder, TPackage package, CancellationToken cancellationToken)
         {
             return _connection.SendAsync(packageEncoder, package, cancellationToken);
         }
 
+        /// <summary>
+        /// Resets the session state. Called by the server when recycling the session.
+        /// </summary>
         void IAppSession.Reset()
         {
             ClearEvent(ref Connected);
@@ -255,10 +296,18 @@ namespace GameFrameX.SuperSocket.Server
             Reset();
         }
 
+        /// <summary>
+        /// Called when the session is reset. Derived classes can override this method to perform additional cleanup.
+        /// </summary>
         protected virtual void Reset()
         {
         }
 
+        /// <summary>
+        /// Clears all handlers from an event.
+        /// </summary>
+        /// <typeparam name="TEventHandler">The type of the event handler.</typeparam>
+        /// <param name="sessionEvent">The event to clear.</param>
         private void ClearEvent<TEventHandler>(ref TEventHandler sessionEvent)
             where TEventHandler : Delegate
         {
@@ -308,23 +357,45 @@ namespace GameFrameX.SuperSocket.Server
         #region ILogger
 
         /// <summary>
-        /// Gets the logger associated with the session.
+        /// Gets the logger associated with the session from the server.
         /// </summary>
+        /// <returns>The logger instance.</returns>
         ILogger GetLogger()
         {
             return (Server as ILoggerAccessor).Logger;
         }
 
+        /// <summary>
+        /// Writes a log entry with the specified log level, event ID, state, exception, and formatter.
+        /// Prefixes log entries with the session ID.
+        /// </summary>
+        /// <typeparam name="TState">The type of the object to be written.</typeparam>
+        /// <param name="logLevel">The level of the log entry.</param>
+        /// <param name="eventId">The event ID for the log entry.</param>
+        /// <param name="state">The state to be logged.</param>
+        /// <param name="exception">The exception related to this entry.</param>
+        /// <param name="formatter">The function to format the state and exception into a log message.</param>
         void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            GetLogger().Log<TState>(logLevel, eventId, state, exception, (s, e) => { return $"Session[{this.SessionID}]: {formatter(s, e)}"; });
+            GetLogger().Log<TState>(logLevel, eventId, state, exception, (s, e) => { return $"Session[{this.SessionId}]: {formatter(s, e)}"; });
         }
 
+        /// <summary>
+        /// Checks if the given log level is enabled.
+        /// </summary>
+        /// <param name="logLevel">The log level to check.</param>
+        /// <returns>True if the log level is enabled; otherwise, false.</returns>
         bool ILogger.IsEnabled(LogLevel logLevel)
         {
             return GetLogger().IsEnabled(logLevel);
         }
 
+        /// <summary>
+        /// Begins a logical operation scope.
+        /// </summary>
+        /// <typeparam name="TState">The type of the state to begin scope for.</typeparam>
+        /// <param name="state">The identifier for the scope.</param>
+        /// <returns>An IDisposable that ends the logical operation scope on dispose.</returns>
         IDisposable ILogger.BeginScope<TState>(TState state)
         {
             return GetLogger().BeginScope<TState>(state);

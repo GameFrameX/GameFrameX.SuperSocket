@@ -62,7 +62,7 @@ namespace GameFrameX.SuperSocket.Server
             }
             catch (Exception e)
             {
-                var toClose = await errorHandler(session, new PackageHandlingException<TPackageInfo>($"Session {session.SessionID} got an error when handle a package.", package, e));
+                var toClose = await errorHandler(session, new PackageHandlingException<TPackageInfo>($"Session {session.SessionId} got an error when handle a package.", package, e));
 
                 if (toClose)
                 {

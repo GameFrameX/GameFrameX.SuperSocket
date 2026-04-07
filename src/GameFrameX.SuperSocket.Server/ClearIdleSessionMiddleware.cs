@@ -63,11 +63,11 @@ namespace GameFrameX.SuperSocket.Server
                         try
                         {
                             s.Connection.CloseAsync(CloseReason.TimeOut);
-                            _logger.LogWarning($"Close the idle session {s.SessionID}, it's LastActiveTime is {s.LastActiveTime}.");
+                            _logger.LogWarning($"Close the idle session {s.SessionId}, it's LastActiveTime is {s.LastActiveTime}.");
                         }
                         catch (Exception exc)
                         {
-                            _logger.LogError(exc, $"Error happened when close the session {s.SessionID} for inactive for a while.");
+                            _logger.LogError(exc, $"Error happened when close the session {s.SessionId} for inactive for a while.");
                         }
                     }
                 }

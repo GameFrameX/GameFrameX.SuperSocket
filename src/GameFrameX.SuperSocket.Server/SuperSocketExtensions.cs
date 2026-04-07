@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace GameFrameX.SuperSocket.Server
 {
+    /// <summary>
+    /// Provides extension methods for SuperSocket components.
+    /// </summary>
     public static class SuperSocketExtensions
     {
         /// <summary>

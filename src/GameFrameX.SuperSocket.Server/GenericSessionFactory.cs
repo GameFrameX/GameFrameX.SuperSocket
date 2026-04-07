@@ -7,15 +7,13 @@ namespace GameFrameX.SuperSocket.Server
     /// A generic session factory for creating instances of a specific session type.
     /// </summary>
     /// <typeparam name="TSession">The type of session to create.</typeparam>
-    public class GenericSessionFactory<TSession> : ISessionFactory where TSession : IAppSession
+    public class GenericSessionFactory<TSession> : ISessionFactory
+        where TSession : IAppSession
     {
         /// <summary>
         /// Gets the type of session created by this factory.
         /// </summary>
-        public Type SessionType
-        {
-            get { return typeof(TSession); }
-        }
+        public Type SessionType => typeof(TSession);
 
         /// <summary>
         /// Gets the service provider used to create session instances.

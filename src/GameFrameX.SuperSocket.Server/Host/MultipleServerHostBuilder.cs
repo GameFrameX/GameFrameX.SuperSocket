@@ -98,10 +98,10 @@ namespace GameFrameX.SuperSocket.Server.Host
             return new MultipleServerHostBuilder(args);
         }
 
-        private ServerHostBuilderAdapter<TReceivePackage> CreateServerHostBuilder<TReceivePackage>(Action<SuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate)
+        private ServerHostBuilderAdapter<TReceivePackage> CreateServerHostBuilder<TReceivePackage>(Action<SuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate, string serverName = null)
             where TReceivePackage : class
         {
-            var hostBuilder = new ServerHostBuilderAdapter<TReceivePackage>(this);
+            var hostBuilder = new ServerHostBuilderAdapter<TReceivePackage>(this, serverName);            
             hostBuilderDelegate(hostBuilder);
             return hostBuilder;
         }
@@ -111,11 +111,12 @@ namespace GameFrameX.SuperSocket.Server.Host
         /// </summary>
         /// <typeparam name="TReceivePackage">The type of the package received by the server.</typeparam>
         /// <param name="hostBuilderDelegate">The action to configure the server host builder.</param>
+        /// <param name="serverName">The optional server name for keyed service registration. Use this to register multiple instances of the same server type.</param>
         /// <returns>The updated host builder.</returns>
-        public MultipleServerHostBuilder AddServer<TReceivePackage>(Action<ISuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate)
+        public MultipleServerHostBuilder AddServer<TReceivePackage>(Action<ISuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate, string serverName = null)
             where TReceivePackage : class
         {
-            var hostBuilder = CreateServerHostBuilder<TReceivePackage>(hostBuilderDelegate);
+            var hostBuilder = CreateServerHostBuilder<TReceivePackage>(hostBuilderDelegate, serverName);
             _hostBuilderAdapters.Add(hostBuilder);
             return this;
         }
@@ -126,12 +127,13 @@ namespace GameFrameX.SuperSocket.Server.Host
         /// <typeparam name="TReceivePackage">The type of the package received by the server.</typeparam>
         /// <typeparam name="TPipelineFilter">The type of the pipeline filter.</typeparam>
         /// <param name="hostBuilderDelegate">The action to configure the server host builder.</param>
+        /// <param name="serverName">The optional server name for keyed service registration. Use this to register multiple instances of the same server type.</param>
         /// <returns>The updated host builder.</returns>
-        public MultipleServerHostBuilder AddServer<TReceivePackage, TPipelineFilter>(Action<ISuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate)
+        public MultipleServerHostBuilder AddServer<TReceivePackage, TPipelineFilter>(Action<ISuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate, string serverName = null)
             where TReceivePackage : class
-            where TPipelineFilter : IPipelineFilter<TReceivePackage>, new()
-        {
-            var hostBuilder = CreateServerHostBuilder<TReceivePackage>(hostBuilderDelegate);
+            where TPipelineFilter : class, IPipelineFilter<TReceivePackage>, new()
+        {            
+            var hostBuilder = CreateServerHostBuilder<TReceivePackage>(hostBuilderDelegate, serverName);
             _hostBuilderAdapters.Add(hostBuilder);
             hostBuilder.UsePipelineFilter<TPipelineFilter>();
             return this;
@@ -155,13 +157,14 @@ namespace GameFrameX.SuperSocket.Server.Host
         /// <typeparam name="TReceivePackage">The type of the package received by the server.</typeparam>
         /// <typeparam name="TPipelineFilter">The type of the pipeline filter.</typeparam>
         /// <param name="hostBuilderDelegate">The action to configure the server host builder.</param>
+        /// <param name="serverName">The optional server name for keyed service registration. Use this to register multiple instances of the same server type.</param>
         /// <returns>The updated host builder.</returns>
-        public MultipleServerHostBuilder AddServer<TSuperSocketService, TReceivePackage, TPipelineFilter>(Action<SuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate)
+        public MultipleServerHostBuilder AddServer<TSuperSocketService, TReceivePackage, TPipelineFilter>(Action<SuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate, string serverName = null)
             where TReceivePackage : class
-            where TPipelineFilter : IPipelineFilter<TReceivePackage>, new()
+            where TPipelineFilter : class, IPipelineFilter<TReceivePackage>, new()
             where TSuperSocketService : SuperSocketService<TReceivePackage>
         {
-            var hostBuilder = CreateServerHostBuilder<TReceivePackage>(hostBuilderDelegate);
+            var hostBuilder = CreateServerHostBuilder<TReceivePackage>(hostBuilderDelegate, serverName);
 
             _hostBuilderAdapters.Add(hostBuilder);
 
