@@ -5,12 +5,14 @@ This enhancement adds comprehensive support for HTTP Keep-Alive connections and 
 ## Features
 
 ### HTTP Keep-Alive Support
+
 - **Connection Reuse**: Multiple HTTP requests over a single connection
 - **Automatic Lifecycle Management**: Proper connection handling based on HTTP headers
 - **Configurable Timeouts**: Customizable keep-alive timeout settings
 - **HTTP/1.1 Compliance**: Full support for HTTP/1.1 keep-alive semantics
 
 ### Server-Sent Events (SSE)
+
 - **Real-time Streaming**: Push data to clients in real-time using `text/event-stream`
 - **Event Types**: Support for custom event types and JSON events
 - **Event IDs**: Automatic event ID generation and tracking for client reconnection
@@ -200,11 +202,13 @@ See the `/samples` directory for complete examples:
 ## Performance Considerations
 
 ### Keep-Alive Benefits
+
 - **Reduced Connection Overhead**: Fewer TCP handshakes
 - **Lower Latency**: No connection establishment delay for subsequent requests
 - **Resource Efficiency**: Fewer server sockets and client connections
 
 ### SSE Considerations
+
 - **Memory Usage**: Each SSE connection holds server resources
 - **Scaling**: Consider connection limits and load balancing
 - **Heartbeat**: Balance between responsiveness and resource usage
@@ -265,6 +269,6 @@ Enable logging to see connection lifecycle:
 ## Future Enhancements
 
 - **HTTP/2 Support**: Binary framing and multiplexing
-- **WebSocket Upgrade**: Seamless protocol switching  
+- **WebSocket Upgrade**: Seamless protocol switching
 - **Compression**: Gzip/deflate support for responses
 - **Caching**: Built-in HTTP caching headers support
