@@ -23,7 +23,7 @@ public class KestrelPipeConnection : PipeConnectionBase
         : base(context.Transport.Input, context.Transport.Output, options)
     {
         _context = context;
-        context.ConnectionClosed.Register(OnConnectionClosed);
+        context.ConnectionClosed.Register(() => OnConnectionClosed());
         LocalEndPoint = context.LocalEndPoint;
         RemoteEndPoint = context.RemoteEndPoint;
 
