@@ -1,57 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <Description>SuperSocket UDP support library.GameFrameX 框架的基础设施框架库.框架文档主页: https://gameframex.doc.alianblank.com</Description>
-        <TargetFramework>net8.0</TargetFramework>
-        <LangVersion>10.0</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>disable</Nullable>
-    </PropertyGroup>
-    <PropertyGroup>
-        <PackageProjectUrl>https://github.com/alianblank/GameFrameX.supersocket</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/alianblank/GameFrameX.SuperSocket.git</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-        <PackageTags>GameFrameX,Lib,Extension,Server,GameServer,SuperSocket</PackageTags>
-        <PackageReleaseNotes>https://gameframex.doc.alianblank.com/</PackageReleaseNotes>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <IsPackable>true</IsPackable>
-        <PackageIcon>logo.png</PackageIcon>
-        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <PackageId>$(AssemblyName)</PackageId>
-        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <IncludeSource>true</IncludeSource>
-        <Authors>Kerry Jiang and other contributors;AlianBlank</Authors>
-        <Owners>Kerry Jiang;AlianBlank</Owners>
-        <Copyright>Kerry Jiang;AlianBlank;GameFrameX;Blank</Copyright>
-        <Title>$(AssemblyName)</Title>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <AssemblyOriginatorKeyFile>../../gameframex.key.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\GameFrameX.SuperSocket.Primitives\GameFrameX.SuperSocket.Primitives.csproj"/>
         <ProjectReference Include="..\GameFrameX.SuperSocket.Connection\GameFrameX.SuperSocket.Connection.csproj"/>
         <ProjectReference Include="..\GameFrameX.SuperSocket.Server.Abstractions\GameFrameX.SuperSocket.Server.Abstractions.csproj"/>
-    </ItemGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <OutputPath>..\..\bin\app_debug</OutputPath>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <OutputPath>..\..\bin\app</OutputPath>
-    </PropertyGroup>
-    <ItemGroup>
-        <None Include="../../logo.png">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-            <Link>logo.png</Link>
-        </None>
-        <None Include="../../README.md">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 </Project>
