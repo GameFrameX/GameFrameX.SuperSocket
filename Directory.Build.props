@@ -1,10 +1,67 @@
 <Project>
-    <PropertyGroup>
-        <Version>1.0.1</Version>
-    </PropertyGroup>
-    
-    <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
-    </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU' and '$(OutputPath)'==''">
+    <OutputPath>$(MSBuildThisFileDirectory)bin/app_debug/</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU' and '$(OutputPath)'==''">
+    <OutputPath>$(MSBuildThisFileDirectory)bin/app/</OutputPath>
+  </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageProjectUrl>https://github.com/alianblank/GameFrameX.supersocket</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/alianblank/GameFrameX.SuperSocket.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>    
+    <PackageTags>GameFrameX,Lib,Extension,Server,GameServer,SuperSocket</PackageTags>
+    <PackageReleaseNotes>https://gameframex.doc.alianblank.com/</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>$(AssemblyName)</PackageId>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IncludeSource>true</IncludeSource>
+    <Authors>Kerry Jiang and other contributors;AlianBlank</Authors>
+    <Owners>Kerry Jiang;AlianBlank</Owners>
+    <Copyright>Kerry Jiang;AlianBlank;GameFrameX;Blank</Copyright>
+    <Title>$(AssemblyName)</Title>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AssemblyOriginatorKeyFile>../../gameframex.key.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IncludeReleaseNotes)' == 'true'">
+    <PackageReadmeFile>v$(PackageVersion).md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(IncludeReleaseNotes)' == 'true'">
+    <None Include="../../releaseNotes/v$(PackageVersion).md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup Condition="$(IsPackable) != False AND '$(OutputType)' != 'Exe'">
+    <Compile Include="..\..\InternalsVisibleTo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <Link>logo.png</Link>
+    </None>
+    <None Include="../../README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

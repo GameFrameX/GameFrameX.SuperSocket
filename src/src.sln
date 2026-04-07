@@ -1,0 +1,102 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Http", "GameFrameX.SuperSocket.Http\GameFrameX.SuperSocket.Http.csproj", "{423F3BB3-9AD0-E9AA-D786-C3F2D395F8F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Kestrel", "GameFrameX.SuperSocket.Kestrel\GameFrameX.SuperSocket.Kestrel.csproj", "{553BAA23-1975-DEF0-36C5-6764B861A924}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.ClientEngine", "GameFrameX.SuperSocket.ClientEngine\GameFrameX.SuperSocket.ClientEngine.csproj", "{652AD109-E030-3D9C-5F42-3A64F4116C60}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Client.Proxy", "GameFrameX.SuperSocket.Client.Proxy\GameFrameX.SuperSocket.Client.Proxy.csproj", "{2346ED43-A75D-ED9A-8D20-CCF1CE7A7DE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Connection", "GameFrameX.SuperSocket.Connection\GameFrameX.SuperSocket.Connection.csproj", "{8AFB5C6A-FD00-F488-D2F9-D432C1D96D25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.WebSocket.Server", "GameFrameX.SuperSocket.WebSocket.Server\GameFrameX.SuperSocket.WebSocket.Server.csproj", "{2DD9C4EA-85B6-5D25-8A30-A996FA43A089}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Client", "GameFrameX.SuperSocket.Client\GameFrameX.SuperSocket.Client.csproj", "{D4CA4B92-E295-2E8D-DEF7-E6F076B28B97}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Command", "GameFrameX.SuperSocket.Command\GameFrameX.SuperSocket.Command.csproj", "{14CEC3CA-BF97-A79A-97F1-567D7A450E47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Server", "GameFrameX.SuperSocket.Server\GameFrameX.SuperSocket.Server.csproj", "{564D8F71-84A1-F3FE-1C0D-53EAFB092886}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Primitives", "GameFrameX.SuperSocket.Primitives\GameFrameX.SuperSocket.Primitives.csproj", "{4CCB588A-4B2E-57E2-361A-DCC563C466F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Server.Abstractions", "GameFrameX.SuperSocket.Server.Abstractions\GameFrameX.SuperSocket.Server.Abstractions.csproj", "{CDB6FA17-2DEF-8FB1-8BDF-2122876F3D2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.Udp", "GameFrameX.SuperSocket.Udp\GameFrameX.SuperSocket.Udp.csproj", "{29E28159-98DD-4A4E-2D3A-7437C7D40A49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.WebSocket", "GameFrameX.SuperSocket.WebSocket\GameFrameX.SuperSocket.WebSocket.csproj", "{2D23962F-1622-B00D-7ACB-567B25E3813C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFrameX.SuperSocket.ProtoBase", "GameFrameX.SuperSocket.ProtoBase\GameFrameX.SuperSocket.ProtoBase.csproj", "{F27E358F-16D7-2572-A11E-FE7FB22E90E1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{423F3BB3-9AD0-E9AA-D786-C3F2D395F8F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{423F3BB3-9AD0-E9AA-D786-C3F2D395F8F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{423F3BB3-9AD0-E9AA-D786-C3F2D395F8F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{423F3BB3-9AD0-E9AA-D786-C3F2D395F8F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{553BAA23-1975-DEF0-36C5-6764B861A924}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{553BAA23-1975-DEF0-36C5-6764B861A924}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{553BAA23-1975-DEF0-36C5-6764B861A924}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{553BAA23-1975-DEF0-36C5-6764B861A924}.Release|Any CPU.Build.0 = Release|Any CPU
+		{652AD109-E030-3D9C-5F42-3A64F4116C60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{652AD109-E030-3D9C-5F42-3A64F4116C60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{652AD109-E030-3D9C-5F42-3A64F4116C60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{652AD109-E030-3D9C-5F42-3A64F4116C60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2346ED43-A75D-ED9A-8D20-CCF1CE7A7DE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2346ED43-A75D-ED9A-8D20-CCF1CE7A7DE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2346ED43-A75D-ED9A-8D20-CCF1CE7A7DE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2346ED43-A75D-ED9A-8D20-CCF1CE7A7DE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AFB5C6A-FD00-F488-D2F9-D432C1D96D25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AFB5C6A-FD00-F488-D2F9-D432C1D96D25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AFB5C6A-FD00-F488-D2F9-D432C1D96D25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AFB5C6A-FD00-F488-D2F9-D432C1D96D25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DD9C4EA-85B6-5D25-8A30-A996FA43A089}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DD9C4EA-85B6-5D25-8A30-A996FA43A089}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DD9C4EA-85B6-5D25-8A30-A996FA43A089}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DD9C4EA-85B6-5D25-8A30-A996FA43A089}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4CA4B92-E295-2E8D-DEF7-E6F076B28B97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4CA4B92-E295-2E8D-DEF7-E6F076B28B97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4CA4B92-E295-2E8D-DEF7-E6F076B28B97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4CA4B92-E295-2E8D-DEF7-E6F076B28B97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14CEC3CA-BF97-A79A-97F1-567D7A450E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14CEC3CA-BF97-A79A-97F1-567D7A450E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14CEC3CA-BF97-A79A-97F1-567D7A450E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14CEC3CA-BF97-A79A-97F1-567D7A450E47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{564D8F71-84A1-F3FE-1C0D-53EAFB092886}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{564D8F71-84A1-F3FE-1C0D-53EAFB092886}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{564D8F71-84A1-F3FE-1C0D-53EAFB092886}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{564D8F71-84A1-F3FE-1C0D-53EAFB092886}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CCB588A-4B2E-57E2-361A-DCC563C466F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CCB588A-4B2E-57E2-361A-DCC563C466F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CCB588A-4B2E-57E2-361A-DCC563C466F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CCB588A-4B2E-57E2-361A-DCC563C466F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDB6FA17-2DEF-8FB1-8BDF-2122876F3D2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDB6FA17-2DEF-8FB1-8BDF-2122876F3D2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDB6FA17-2DEF-8FB1-8BDF-2122876F3D2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDB6FA17-2DEF-8FB1-8BDF-2122876F3D2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29E28159-98DD-4A4E-2D3A-7437C7D40A49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29E28159-98DD-4A4E-2D3A-7437C7D40A49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29E28159-98DD-4A4E-2D3A-7437C7D40A49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29E28159-98DD-4A4E-2D3A-7437C7D40A49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D23962F-1622-B00D-7ACB-567B25E3813C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D23962F-1622-B00D-7ACB-567B25E3813C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D23962F-1622-B00D-7ACB-567B25E3813C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D23962F-1622-B00D-7ACB-567B25E3813C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F27E358F-16D7-2572-A11E-FE7FB22E90E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F27E358F-16D7-2572-A11E-FE7FB22E90E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F27E358F-16D7-2572-A11E-FE7FB22E90E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F27E358F-16D7-2572-A11E-FE7FB22E90E1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {78D96A96-4FDA-424E-A727-67DF6C508C4E}
+	EndGlobalSection
+EndGlobal
