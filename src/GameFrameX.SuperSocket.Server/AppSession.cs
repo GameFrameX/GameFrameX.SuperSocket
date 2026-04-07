@@ -36,7 +36,7 @@ namespace GameFrameX.SuperSocket.Server
         /// </summary>
         /// <param name="server">The server information.</param>
         /// <param name="connection">The connection associated with the session.</param>
-        void IAppSession.Initialize(IServerInfo server, IConnection connection)
+        public void Initialize(IServerInfo server, IConnection connection)
         {
             if (connection is IConnectionWithSessionIdentifier connectionWithSessionIdentifier)
             {
@@ -85,6 +85,9 @@ namespace GameFrameX.SuperSocket.Server
             }
         }
 
+        /// <summary>
+        /// Gets the server information associated with this session.
+        /// </summary>
         public IServerInfo Server { get; private set; }
 
         IConnection IAppSession.Connection
@@ -107,7 +110,9 @@ namespace GameFrameX.SuperSocket.Server
                 var connection = _connection;
 
                 if (connection == null)
+                {
                     return null;
+                }
 
                 return connection.ProxyInfo?.SourceEndPoint ?? connection.RemoteEndPoint;
             }
@@ -167,7 +172,9 @@ namespace GameFrameX.SuperSocket.Server
                     var items = _items;
 
                     if (items == null)
+                    {
                         items = _items = new Dictionary<object, object>();
+                    }
 
                     items[name] = value;
                 }
@@ -198,7 +205,9 @@ namespace GameFrameX.SuperSocket.Server
             var closeEventHandler = Closed;
 
             if (closeEventHandler == null)
+            {
                 return;
+            }
 
             await closeEventHandler.Invoke(this, e);
         }
@@ -261,7 +270,7 @@ namespace GameFrameX.SuperSocket.Server
         /// <param name="data">The sequence of binary data to send.</param>
         /// <param name="cancellationToken">The token for canceling the operation.</param>
         /// <returns>A task representing the asynchronous send operation.</returns>
-        public ValueTask SendAsync(ReadOnlySequence<byte> data, CancellationToken cancellationToken = default)
+        public virtual ValueTask SendAsync(ReadOnlySequence<byte> data, CancellationToken cancellationToken = default)
         {
             return _connection.SendAsync(data, cancellationToken);
         }
@@ -274,7 +283,7 @@ namespace GameFrameX.SuperSocket.Server
         /// <param name="package">The package to send.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task representing the async send operation.</returns>
-        public ValueTask SendAsync<TPackage>(IPackageEncoder<TPackage> packageEncoder, TPackage package, CancellationToken cancellationToken)
+        public virtual ValueTask SendAsync<TPackage>(IPackageEncoder<TPackage> packageEncoder, TPackage package, CancellationToken cancellationToken)
         {
             return _connection.SendAsync(packageEncoder, package, cancellationToken);
         }
@@ -404,7 +413,10 @@ namespace GameFrameX.SuperSocket.Server
         /// <summary>
         /// Gets the logger associated with the session.
         /// </summary>
-        public ILogger Logger => this as ILogger;
+        public ILogger Logger
+        {
+            get { return this as ILogger; }
+        }
 
         #endregion
     }
