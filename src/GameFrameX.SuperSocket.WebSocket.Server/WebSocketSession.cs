@@ -56,6 +56,16 @@ namespace GameFrameX.SuperSocket.WebSocket.Server
         /// Sends a WebSocket package asynchronously.
         /// </summary>
         /// <param name="message">The WebSocket package to send.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
+        public virtual ValueTask SendAsync(WebSocketPackage message)
+        {
+            return this.SendAsync(message, this.Connection.ConnectionToken);
+        }
+
+        /// <summary>
+        /// Sends a WebSocket package asynchronously.
+        /// </summary>
+        /// <param name="message">The WebSocket package to send.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous send operation.</returns>
         public virtual ValueTask SendAsync(WebSocketPackage message, CancellationToken cancellationToken = default)
@@ -67,16 +77,26 @@ namespace GameFrameX.SuperSocket.WebSocket.Server
         /// Sends a text message asynchronously.
         /// </summary>
         /// <param name="message">The text message to send.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
+        public virtual ValueTask SendAsync(string message)
+        {
+            return SendAsync(message, this.Connection.ConnectionToken);
+        }
+
+        /// <summary>
+        /// Sends a text message asynchronously.
+        /// </summary>
+        /// <param name="message">The text message to send.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous send operation.</returns>
         public virtual ValueTask SendAsync(string message, CancellationToken cancellationToken = default)
         {
             return SendAsync(new WebSocketPackage
-                             {
-                                 OpCode = OpCode.Text,
-                                 Message = message,
-                             },
-                             cancellationToken);
+                {
+                    OpCode = OpCode.Text,
+                    Message = message,
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -110,16 +130,26 @@ namespace GameFrameX.SuperSocket.WebSocket.Server
         /// Sends binary data asynchronously.
         /// </summary>
         /// <param name="data">The binary data to send.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
+        public virtual ValueTask SendAsync(ReadOnlySequence<byte> data)
+        {
+            return SendAsync(data, this.Connection.ConnectionToken);
+        }
+
+        /// <summary>
+        /// Sends binary data asynchronously.
+        /// </summary>
+        /// <param name="data">The binary data to send.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous send operation.</returns>
         public virtual ValueTask SendAsync(ReadOnlySequence<byte> data, CancellationToken cancellationToken = default)
         {
             return SendAsync(new WebSocketPackage
-                             {
-                                 OpCode = OpCode.Binary,
-                                 Data = data,
-                             },
-                             cancellationToken);
+                {
+                    OpCode = OpCode.Binary,
+                    Data = data,
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -145,8 +175,8 @@ namespace GameFrameX.SuperSocket.WebSocket.Server
 
             var buffer = new byte[textEncodedLen + 2];
 
-            buffer[0] = (byte)(closeReasonCode / 256);
-            buffer[1] = (byte)(closeReasonCode % 256);
+            buffer[0] = (byte) (closeReasonCode / 256);
+            buffer[1] = (byte) (closeReasonCode % 256);
 
             var length = 2;
 
@@ -163,11 +193,11 @@ namespace GameFrameX.SuperSocket.WebSocket.Server
             OnCloseHandshakeStarted();
 
             return SendAsync(new WebSocketPackage
-                             {
-                                 OpCode = OpCode.Close,
-                                 Data = new ReadOnlySequence<byte>(buffer, 0, length)
-                             },
-                             cancellationToken);
+                {
+                    OpCode = OpCode.Close,
+                    Data = new ReadOnlySequence<byte>(buffer, 0, length)
+                },
+                cancellationToken);
         }
 
         private void OnCloseHandshakeStarted()
