@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Net;
 using GameFrameX.SuperSocket.ProtoBase;
 
@@ -6,7 +7,7 @@ namespace GameFrameX.SuperSocket.Client
     /// <summary>
     /// Defines methods and properties for managing client connections and data transmission.
     /// </summary>
-    public interface IEasyClient
+    public interface IEasyClient : IDisposable, IAsyncDisposable
     {
         /// <summary>
         /// Gets or sets the proxy connector for the client.
@@ -24,7 +25,7 @@ namespace GameFrameX.SuperSocket.Client
         /// <summary>
         /// Gets or sets the local endpoint for the client.
         /// </summary>
-        IPEndPoint LocalEndPoint { get; set; }
+        EndPoint LocalEndPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the security options for the client.
@@ -42,6 +43,13 @@ namespace GameFrameX.SuperSocket.Client
         /// <param name="data">The data to send.</param>
         /// <returns>A task that represents the asynchronous send operation.</returns>
         ValueTask SendAsync(ReadOnlyMemory<byte> data);
+
+        /// <summary>
+        /// Asynchronously sends data to the server.
+        /// </summary>
+        /// <param name="data">The data to send.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
+        ValueTask SendAsync(ReadOnlySequence<byte> data);
 
         /// <summary>
         /// Asynchronously sends a package to the server using the specified encoder.
@@ -68,7 +76,8 @@ namespace GameFrameX.SuperSocket.Client
     /// Defines methods and properties for managing client connections and data transmission with a specific receive package type.
     /// </summary>
     /// <typeparam name="TReceivePackage">The type of the received package.</typeparam>
-    public interface IEasyClient<TReceivePackage> : IEasyClient where TReceivePackage : class
+    public interface IEasyClient<TReceivePackage> : IEasyClient
+        where TReceivePackage : class
     {
         /// <summary>
         /// Asynchronously receives a package from the server.
@@ -87,7 +96,8 @@ namespace GameFrameX.SuperSocket.Client
     /// </summary>
     /// <typeparam name="TReceivePackage">The type of the received package.</typeparam>
     /// <typeparam name="TSendPackage">The type of the package to send.</typeparam>
-    public interface IEasyClient<TReceivePackage, TSendPackage> : IEasyClient<TReceivePackage> where TReceivePackage : class
+    public interface IEasyClient<TReceivePackage, TSendPackage> : IEasyClient<TReceivePackage>
+        where TReceivePackage : class
     {
         /// <summary>
         /// Asynchronously sends a package to the server.

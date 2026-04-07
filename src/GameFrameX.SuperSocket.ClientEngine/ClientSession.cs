@@ -1,23 +1,53 @@
-﻿using System.Net;
+﻿using System.Buffers;
+using System.Net;
 using System.Net.Sockets;
 
 namespace GameFrameX.SuperSocket.ClientEngine
 {
     public abstract class ClientSession : IClientSession, IBufferSetter
     {
+        /// <summary>
+        /// 
+        /// </summary>
         protected Socket Client { get; set; }
 
-        public string SessionID { get; private set; }
+        /// <summary>
+        /// Session unique Id   
+        /// </summary>
+        public string SessionId { get; private set; }
 
+        /// <summary>
+        /// Send data to client
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public ValueTask SendAsync(byte[] data, CancellationToken cancellationToken = default)
         {
             return SendAsync(new ArraySegment<byte>(data), cancellationToken);
         }
 
+        /// <summary>
+        /// Send data to client
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
         {
             Send(data.ToArray(), 0, data.Length);
             return ValueTask.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sends a sequence of binary data asynchronously using the connection.
+        /// </summary>
+        /// <param name="data">The sequence of binary data to send.</param>
+        /// <param name="cancellationToken">The token for canceling the operation.</param>
+        /// <returns>A task representing the asynchronous send operation.</returns>
+        public ValueTask SendAsync(ReadOnlySequence<byte> data, CancellationToken cancellationToken = default)
+        {
+            return SendAsync(data.ToArray(), cancellationToken);
         }
 
 
@@ -39,7 +69,7 @@ namespace GameFrameX.SuperSocket.ClientEngine
 
         public ClientSession()
         {
-            SessionID = Guid.NewGuid().ToString();
+            SessionId = Guid.NewGuid().ToString();
         }
 
 

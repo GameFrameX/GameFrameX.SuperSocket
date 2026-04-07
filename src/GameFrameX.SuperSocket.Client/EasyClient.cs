@@ -38,7 +38,7 @@ namespace GameFrameX.SuperSocket.Client
         /// <summary>
         /// Gets or sets the local endpoint for the client.
         /// </summary>
-        public IPEndPoint LocalEndPoint { get; set; }
+        public EndPoint LocalEndPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the security options for the client.
@@ -50,8 +50,14 @@ namespace GameFrameX.SuperSocket.Client
         /// </summary>
         public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.NoCompression;
 
+        /// <summary>
+        /// Gets or sets the size of the socket sender pool.
+        /// </summary>
         public static int? SocketSenderPoolSize { get; set; }
 
+        /// <summary>
+        /// The default size of the socket sender pool.
+        /// </summary>
         internal static readonly int DefaultSocketSenderPoolSize = 10;
 
         private bool _continuousReceivingStarted = false;
@@ -87,6 +93,15 @@ namespace GameFrameX.SuperSocket.Client
         }
 
         /// <summary>
+        /// Creates the default connector for the client.
+        /// </summary>
+        /// <returns>The default connector.</returns>
+        protected IConnector CreateDefaultConnector()
+        {
+            return new SocketConnector(LocalEndPoint);
+        }
+
+        /// <summary>
         /// Gets the connector for the client.
         /// </summary>
         /// <returns>The connector to use for the client.</returns>
@@ -100,7 +115,7 @@ namespace GameFrameX.SuperSocket.Client
             }
             else
             {
-                connectors.Add(new SocketConnector(LocalEndPoint));
+                connectors.Add(CreateDefaultConnector());
             }
 
             var security = Security;
@@ -175,6 +190,7 @@ namespace GameFrameX.SuperSocket.Client
                 throw new Exception("Socket is null.");
 
             SetupConnection(state.CreateConnection(Options));
+            LocalEndPoint = socket.LocalEndPoint;
             return true;
         }
 
@@ -218,8 +234,11 @@ namespace GameFrameX.SuperSocket.Client
 
                 try
                 {
-                    var result = await socket.ReceiveFromAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), SocketFlags.None, connection.RemoteEndPoint).ConfigureAwait(false);
-                    await connection.WritePipeDataAsync((new ArraySegment<byte>(buffer, 0, result.ReceivedBytes)).AsMemory(), CancellationToken.None);
+                    var result = await socket
+                        .ReceiveFromAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), SocketFlags.None, connection.RemoteEndPoint)
+                        .ConfigureAwait(false);
+
+                    await connection.WriteInputPipeDataAsync((new ArraySegment<byte>(buffer, 0, result.ReceivedBytes)).AsMemory(), CancellationToken.None);
                 }
                 catch (NullReferenceException)
                 {
@@ -258,7 +277,7 @@ namespace GameFrameX.SuperSocket.Client
         /// <summary>
         /// Starts receiving data from the server.
         /// </summary>
-        private void StartReceive()
+        protected void StartReceive()
         {
             StartReceiveAsync().ContinueWith((task, state) =>
             {
@@ -334,12 +353,28 @@ namespace GameFrameX.SuperSocket.Client
             return SendAsync(data);
         }
 
+        ValueTask IEasyClient.SendAsync(ReadOnlySequence<byte> data)
+        {
+            return SendAsync(data);
+        }
+
         /// <summary>
         /// Asynchronously sends data to the server.
         /// </summary>
         /// <param name="data">The data to send.</param>
         /// <returns>A task that represents the asynchronous send operation.</returns>
         protected virtual async ValueTask SendAsync(ReadOnlyMemory<byte> data)
+        {
+            await Connection.SendAsync(data);
+        }
+
+
+        /// <summary>
+        /// Asynchronously sends data to the server.
+        /// </summary>
+        /// <param name="data">The data to send.</param>
+        /// <returns>A task that represents the asynchronous send operation.</returns>
+        protected virtual async ValueTask SendAsync(ReadOnlySequence<byte> data)
         {
             await Connection.SendAsync(data);
         }
@@ -384,6 +419,18 @@ namespace GameFrameX.SuperSocket.Client
             }
 
             OnClosed(this, EventArgs.Empty);
+        }
+
+        public void Dispose()
+        {
+            DisposeAsync()
+                .AsTask()
+                .Wait();
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            return CloseAsync();
         }
     }
 
