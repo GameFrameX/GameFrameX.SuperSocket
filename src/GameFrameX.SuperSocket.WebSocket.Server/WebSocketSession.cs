@@ -68,7 +68,7 @@ namespace GameFrameX.SuperSocket.WebSocket.Server
         /// <param name="message">The WebSocket package to send.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous send operation.</returns>
-        public virtual ValueTask SendAsync(WebSocketPackage message, CancellationToken cancellationToken = default)
+        public virtual ValueTask SendAsync(WebSocketPackage message, CancellationToken cancellationToken)
         {
             return this.Connection.SendAsync(MessageEncoder, message, cancellationToken);
         }
@@ -89,7 +89,7 @@ namespace GameFrameX.SuperSocket.WebSocket.Server
         /// <param name="message">The text message to send.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous send operation.</returns>
-        public virtual ValueTask SendAsync(string message, CancellationToken cancellationToken = default)
+        public virtual ValueTask SendAsync(string message, CancellationToken cancellationToken)
         {
             return SendAsync(new WebSocketPackage
                 {
@@ -142,7 +142,7 @@ namespace GameFrameX.SuperSocket.WebSocket.Server
         /// <param name="data">The binary data to send.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous send operation.</returns>
-        public virtual ValueTask SendAsync(ReadOnlySequence<byte> data, CancellationToken cancellationToken = default)
+        public virtual ValueTask SendAsync(ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             return SendAsync(new WebSocketPackage
                 {
