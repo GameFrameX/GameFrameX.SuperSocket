@@ -13,6 +13,9 @@ using GameFrameX.SuperSocket.Server.Abstractions.Session;
 
 namespace GameFrameX.SuperSocket.Udp
 {
+    /// <summary>
+    /// Represents a listener for UDP connections.
+    /// </summary>
     class UdpConnectionListener : IConnectionListener
     {
         private ILogger _logger;
@@ -21,14 +24,29 @@ namespace GameFrameX.SuperSocket.Udp
 
         private IPEndPoint _acceptRemoteEndPoint;
 
+        /// <summary>
+        /// Gets the factory for creating connections.
+        /// </summary>
         public IConnectionFactory ConnectionFactory { get; }
+        
+        /// <summary>
+        /// Gets the options for the listener.
+        /// </summary>
+        public ListenOptions Options { get;  }
 
-        public ListenOptions Options { get; }
-
+        /// <summary>
+        /// Gets the options for the connection.
+        /// </summary>
         public ConnectionOptions ConnectionOptions { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether the listener is running.
+        /// </summary>
         public bool IsRunning { get; private set; }
 
+        /// <summary>
+        /// Occurs when a new connection is accepted.
+        /// </summary>
         public event NewConnectionAcceptHandler NewConnectionAccept;
 
         private static readonly ArrayPool<byte> _bufferPool = ArrayPool<byte>.Shared;
@@ -41,6 +59,15 @@ namespace GameFrameX.SuperSocket.Udp
 
         private IAsyncSessionContainer _sessionContainer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UdpConnectionListener"/> class.
+        /// </summary>
+        /// <param name="options">The options for the listener.</param>
+        /// <param name="connectionOptions">The options for the connection.</param>
+        /// <param name="connectionFactory">The factory for creating connections.</param>
+        /// <param name="logger">The logger instance.</param>
+        /// <param name="udpSessionIdentifierProvider">The provider for UDP session identifiers.</param>
+        /// <param name="sessionContainer">The container for managing sessions.</param>
         public UdpConnectionListener(ListenOptions options, ConnectionOptions connectionOptions, IConnectionFactory connectionFactory, ILogger logger, IUdpSessionIdentifierProvider udpSessionIdentifierProvider, IAsyncSessionContainer sessionContainer)
         {
             Options = options;
@@ -51,15 +78,19 @@ namespace GameFrameX.SuperSocket.Udp
             _sessionContainer = sessionContainer;
         }
 
+        /// <summary>
+        /// Starts the UDP connection listener.
+        /// </summary>
+        /// <returns><c>true</c> if the listener started successfully; otherwise, <c>false</c>.</returns>
         public bool Start()
         {
             var options = Options;
 
             try
-            {
-                var listenEndpoint = options.ToEndPoint();
+            {                
+                var listenEndpoint = options.ToEndPoint();                
                 var listenSocket = _listenSocket = new Socket(listenEndpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-
+                
                 if (options.NoDelay)
                     listenSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.NoDelay, true);
 
@@ -82,7 +113,7 @@ namespace GameFrameX.SuperSocket.Udp
                 catch (PlatformNotSupportedException)
                 {
                     _logger.LogWarning("Failed to set socket option SIO_UDP_CONNRESET because the platform doesn't support it.");
-                }
+                }                
 
                 IsRunning = true;
 
@@ -115,12 +146,12 @@ namespace GameFrameX.SuperSocket.Udp
 
                     var packageData = new ArraySegment<byte>(buffer, 0, result.ReceivedBytes);
                     var remoteEndPoint = result.RemoteEndPoint as IPEndPoint;
-
+                    
                     var sessionID = _udpSessionIdentifierProvider.GetSessionIdentifier(remoteEndPoint, packageData);
 
                     var session = await _sessionContainer.GetSessionByIDAsync(sessionID);
 
-                    IVirtualConnection connection = null;
+                    IVirtualConnection connection  = null;
 
                     if (session != null)
                     {
@@ -136,13 +167,13 @@ namespace GameFrameX.SuperSocket.Udp
                         OnNewConnectionAccept(connection);
                     }
 
-                    await connection.WritePipeDataAsync(packageData.AsMemory(), _cancellationTokenSource.Token);
+                    await connection.WriteInputPipeDataAsync(packageData.AsMemory(), _cancellationTokenSource.Token);
                 }
                 catch (Exception e)
                 {
                     if (e is ObjectDisposedException || e is NullReferenceException)
                         break;
-
+                    
                     if (e is SocketException se)
                     {
                         var errorCode = se.ErrorCode;
@@ -153,7 +184,7 @@ namespace GameFrameX.SuperSocket.Udp
                             break;
                         }
                     }
-
+                    
                     _logger.LogError(e, $"Listener[{this.ToString()}] failed to receive udp data");
                 }
                 finally
@@ -196,9 +227,14 @@ namespace GameFrameX.SuperSocket.Udp
             {
                 _logger.LogError(e, $"Failed to create connection for {socket.RemoteEndPoint}.");
                 return null;
-            }
+            }   
         }
 
+        /// <summary>
+        /// Creates a connection using the specified socket.
+        /// </summary>
+        /// <param name="connection">The socket representing the connection.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the created connection.</returns>
         public async Task<IConnection> CreateConnection(object connection)
         {
             var socket = (Socket)connection;
@@ -206,6 +242,10 @@ namespace GameFrameX.SuperSocket.Udp
             return await CreateConnection(socket, remoteEndPoint, _udpSessionIdentifierProvider.GetSessionIdentifier(remoteEndPoint, null));
         }
 
+        /// <summary>
+        /// Stops the UDP connection listener asynchronously.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous stop operation.</returns>
         public Task StopAsync()
         {
             var listenSocket = _listenSocket;
@@ -217,7 +257,7 @@ namespace GameFrameX.SuperSocket.Udp
 
             _cancellationTokenSource.Cancel();
             listenSocket.Close();
-
+            
             return _stopTaskCompletionSource.Task;
         }
 
@@ -225,9 +265,14 @@ namespace GameFrameX.SuperSocket.Udp
         {
             return Options?.ToString();
         }
+
+        /// <summary>
+        /// Disposes the resources used by the UDP connection listener.
+        /// </summary>
         public void Dispose()
         {
             var listenSocket = _listenSocket;
+
             if (listenSocket != null && Interlocked.CompareExchange(ref _listenSocket, null, listenSocket) == listenSocket)
             {
                 listenSocket.Dispose();
