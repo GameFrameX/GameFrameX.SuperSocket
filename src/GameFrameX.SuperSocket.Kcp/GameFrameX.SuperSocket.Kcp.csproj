@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>SuperSocket KCP protocol support library. GameFrameX 框架的 KCP 协议支持库.框架文档主页: https://gameframex.doc.alianblank.com</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\GameFrameX.SuperSocket.Primitives\GameFrameX.SuperSocket.Primitives.csproj"/>
+        <ProjectReference Include="..\GameFrameX.SuperSocket.ProtoBase\GameFrameX.SuperSocket.ProtoBase.csproj"/>
+        <ProjectReference Include="..\GameFrameX.SuperSocket.Connection\GameFrameX.SuperSocket.Connection.csproj"/>
+        <ProjectReference Include="..\GameFrameX.SuperSocket.Server.Abstractions\GameFrameX.SuperSocket.Server.Abstractions.csproj"/>
+    </ItemGroup>
+</Project>
