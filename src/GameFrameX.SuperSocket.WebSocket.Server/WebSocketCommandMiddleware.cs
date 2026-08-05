@@ -5,7 +5,10 @@ using Microsoft.Extensions.Options;
 
 namespace GameFrameX.SuperSocket.WebSocket.Server
 {
-    interface IWebSocketCommandMiddleware : IMiddleware
+    /// <summary>
+    /// Represents a middleware for handling WebSocket commands.
+    /// </summary>
+    public interface IWebSocketCommandMiddleware : IMiddleware
     {
 
     }
