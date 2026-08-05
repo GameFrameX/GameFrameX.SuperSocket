@@ -415,7 +415,7 @@ namespace GameFrameX.SuperSocket.Connection
                         if (bufferFilterResult.Exception != null)
                         {
                             OnError("Protocol error", bufferFilterResult.Exception);
-                            CloseReason = SuperSocket.Connection.CloseReason.ProtocolError;
+                            CloseReason = Connection.CloseReason.ProtocolError;
                             Close();
                             completedOrCancelled = true;
                             break;
