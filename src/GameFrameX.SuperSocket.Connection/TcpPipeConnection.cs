@@ -14,6 +14,8 @@ namespace GameFrameX.SuperSocket.Connection
 
         private readonly ObjectPool<SocketSender> _socketSenderPool;
 
+        private SocketSender _socketSender;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TcpPipeConnection"/> class with the specified socket, options, and socket sender pool.
         /// </summary>
@@ -28,6 +30,12 @@ namespace GameFrameX.SuperSocket.Connection
             LocalEndPoint = socket.LocalEndPoint;
 
             _socketSenderPool = socketSenderPool;
+
+            // Acquire a dedicated sender for the lifetime of this connection. SocketAsyncEventArgs is bound
+            // to a single in-flight operation and must not be shared across connections concurrently; the
+            // previous per-send Get/Return let different connections reuse one instance and corrupted the
+            // native overlapped, surfacing as the callBack null terminating crash.
+            _socketSender = socketSenderPool?.Get() ?? new SocketSender();
         }
 
         /// <summary>
@@ -35,6 +43,25 @@ namespace GameFrameX.SuperSocket.Connection
         /// </summary>
         protected override void OnClosed()
         {
+            var socketSender = _socketSender;
+            _socketSender = null;
+
+            if (socketSender != null)
+            {
+                var pool = _socketSenderPool;
+
+                if (pool != null)
+                {
+                    // Returning triggers the now-complete TryReset, clearing any residual
+                    // IValueTaskSource state before the next connection reuses the instance.
+                    pool.Return(socketSender);
+                }
+                else
+                {
+                    socketSender.Dispose();
+                }
+            }
+
             _socket = null;
             base.OnClosed();
         }
@@ -66,26 +93,9 @@ namespace GameFrameX.SuperSocket.Connection
         /// <returns>The total number of bytes sent.</returns>
         protected override async ValueTask<int> SendOverIOAsync(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
         {
-            var socketSenderPool = _socketSenderPool;
-
-            var socketSender = socketSenderPool?.Get() ?? new SocketSender();
-
-            try
-            {
-                var sentBytes = await socketSender.SendAsync(_socket, buffer).ConfigureAwait(false);
-
-                if (socketSenderPool != null)
-                {
-                    socketSenderPool.Return(socketSender);
-                    socketSender = null;
-                }
-
-                return sentBytes;
-            }
-            finally
-            {
-                socketSender?.Dispose();
-            }
+            // The sender is exclusive to this connection (see constructor). It is no longer
+            // borrowed/returned per send, so SAEA instances are never shared across connections.
+            return await _socketSender.SendAsync(_socket, buffer).ConfigureAwait(false);
         }
 
         /// <summary>

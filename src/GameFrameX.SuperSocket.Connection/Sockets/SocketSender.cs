@@ -166,8 +166,18 @@ namespace GameFrameX.SuperSocket.Connection.Sockets
         /// Attempts to reset the state of the sender.
         /// </summary>
         /// <returns><c>true</c> if the state was successfully reset; otherwise, <c>false</c>.</returns>
+        /// <remarks>
+        /// <see cref="DefaultObjectPool{T}"/> invokes this when an instance is returned to the pool.
+        /// Besides the buffer, the <see cref="IValueTaskSource"/> continuation and
+        /// <see cref="SocketAsyncEventArgs.UserToken"/> must also be cleared; otherwise residual state
+        /// from a previous send makes the next caller's <see cref="GetStatus"/> misjudge the operation
+        /// as completed, leaving the real native send unobserved and corrupting the overlapped state.
+        /// </remarks>
         public bool TryReset()
         {
+            _continuation = null;
+            UserToken = null;
+
             if (BufferList != null)
             {
                 BufferList = null;
