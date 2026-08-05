@@ -262,5 +262,13 @@ namespace GameFrameX.SuperSocket.Connection
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>The total number of bytes read.</returns>
         protected abstract ValueTask<int> FillInputPipeWithDataAsync(Memory<byte> memory, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Cancels the pending read on the output pipe reader so the send loop unblocks immediately when the connection is being closed.
+        /// </summary>
+        protected override void CancelOutputPendingRead()
+        {
+            this.Output.Reader.CancelPendingRead();
+        }
     }
 }

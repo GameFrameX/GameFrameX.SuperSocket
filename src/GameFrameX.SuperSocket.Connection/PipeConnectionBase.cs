@@ -192,6 +192,7 @@ namespace GameFrameX.SuperSocket.Connection
 
             _cts.Cancel();
             await CompleteWriterAsync(OutputWriter, _isDetaching).ConfigureAwait(false);
+            CancelOutputPendingRead();
         }
 
         /// <summary>
@@ -577,6 +578,13 @@ namespace GameFrameX.SuperSocket.Connection
         protected virtual async ValueTask CompleteWriterAsync(PipeWriter writer, bool isDetaching)
         {
             await writer.CompleteAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Cancels the pending read on the output pipe reader so that the send loop (<see cref="PipeConnection.ProcessSends"/>) blocked on <c>ReadAsync</c> returns promptly during connection shutdown.
+        /// </summary>
+        protected virtual void CancelOutputPendingRead()
+        {
         }
 
         internal struct BufferFilterResult<TPackageInfo>
