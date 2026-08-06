@@ -131,7 +131,7 @@ namespace GameFrameX.SuperSocket.Server.Host
         /// <returns>The updated host builder.</returns>
         public MultipleServerHostBuilder AddServer<TReceivePackage, TPipelineFilter>(Action<ISuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate, string serverName = null)
             where TReceivePackage : class
-            where TPipelineFilter : class, IPipelineFilter<TReceivePackage>, new()
+            where TPipelineFilter : class, IPipelineFilter<TReceivePackage>
         {            
             var hostBuilder = CreateServerHostBuilder<TReceivePackage>(hostBuilderDelegate, serverName);
             _hostBuilderAdapters.Add(hostBuilder);
@@ -161,7 +161,7 @@ namespace GameFrameX.SuperSocket.Server.Host
         /// <returns>The updated host builder.</returns>
         public MultipleServerHostBuilder AddServer<TSuperSocketService, TReceivePackage, TPipelineFilter>(Action<SuperSocketHostBuilder<TReceivePackage>> hostBuilderDelegate, string serverName = null)
             where TReceivePackage : class
-            where TPipelineFilter : class, IPipelineFilter<TReceivePackage>, new()
+            where TPipelineFilter : class, IPipelineFilter<TReceivePackage>
             where TSuperSocketService : SuperSocketService<TReceivePackage>
         {
             var hostBuilder = CreateServerHostBuilder<TReceivePackage>(hostBuilderDelegate, serverName);
