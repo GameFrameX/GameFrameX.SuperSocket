@@ -73,7 +73,7 @@ namespace GameFrameX.SuperSocket.Client
 
             if (stream != null)
             {
-                return new StreamPipeConnection(stream , socket.RemoteEndPoint, socket.LocalEndPoint, connectionOptions);
+                return new StreamPipeConnection(stream, socket.RemoteEndPoint, socket.LocalEndPoint, connectionOptions);
             }
             else
             {
