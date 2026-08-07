@@ -1,0 +1,23 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="GameFrameX.SuperSocket.Client.Proxy/GameFrameX.SuperSocket.Client.Proxy.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Client/GameFrameX.SuperSocket.Client.csproj" />
+  <Project Path="GameFrameX.SuperSocket.ClientEngine/GameFrameX.SuperSocket.ClientEngine.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Command/GameFrameX.SuperSocket.Command.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Connection/GameFrameX.SuperSocket.Connection.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Http/GameFrameX.SuperSocket.Http.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Kcp/GameFrameX.SuperSocket.Kcp.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Kestrel/GameFrameX.SuperSocket.Kestrel.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Primitives/GameFrameX.SuperSocket.Primitives.csproj" />
+  <Project Path="GameFrameX.SuperSocket.ProtoBase/GameFrameX.SuperSocket.ProtoBase.csproj" />
+  <Project Path="GameFrameX.SuperSocket.ReliableSession/GameFrameX.SuperSocket.ReliableSession.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Server.Abstractions/GameFrameX.SuperSocket.Server.Abstractions.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Server/GameFrameX.SuperSocket.Server.csproj" />
+  <Project Path="GameFrameX.SuperSocket.Udp/GameFrameX.SuperSocket.Udp.csproj" />
+  <Project Path="GameFrameX.SuperSocket.WebSocket.Server/GameFrameX.SuperSocket.WebSocket.Server.csproj" />
+  <Project Path="GameFrameX.SuperSocket.WebSocket/GameFrameX.SuperSocket.WebSocket.csproj" />
+</Solution>

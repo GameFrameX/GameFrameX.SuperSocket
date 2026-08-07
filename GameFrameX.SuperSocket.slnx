@@ -1,0 +1,29 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/GameFrameX.SuperSocket.Client.Proxy/GameFrameX.SuperSocket.Client.Proxy.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Client/GameFrameX.SuperSocket.Client.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.ClientEngine/GameFrameX.SuperSocket.ClientEngine.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Command/GameFrameX.SuperSocket.Command.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Connection/GameFrameX.SuperSocket.Connection.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Http/GameFrameX.SuperSocket.Http.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Kcp/GameFrameX.SuperSocket.Kcp.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Kestrel/GameFrameX.SuperSocket.Kestrel.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Primitives/GameFrameX.SuperSocket.Primitives.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.ProtoBase/GameFrameX.SuperSocket.ProtoBase.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.ReliableSession/GameFrameX.SuperSocket.ReliableSession.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Server.Abstractions/GameFrameX.SuperSocket.Server.Abstractions.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Server/GameFrameX.SuperSocket.Server.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.Udp/GameFrameX.SuperSocket.Udp.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.WebSocket.Server/GameFrameX.SuperSocket.WebSocket.Server.csproj" />
+    <Project Path="src/GameFrameX.SuperSocket.WebSocket/GameFrameX.SuperSocket.WebSocket.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/GameFrameX.SuperSocket.Kcp.Tests/GameFrameX.SuperSocket.Kcp.Tests.csproj" />
+    <Project Path="test/GameFrameX.SuperSocket.ReliableSession.Tests/GameFrameX.SuperSocket.ReliableSession.Tests.csproj" />
+  </Folder>
+</Solution>
