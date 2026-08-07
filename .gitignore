@@ -13,3 +13,9 @@ _ReSharper.*
 test/SuperSocket.Benchmarks/BenchmarkDotNet.Artifacts
 e2e
 .idea
+
+# kernel docs: managed in Obsidian via symlink, not version-controlled
+gfx-doc
+
+# CodeGraph semantic index (local only)
+.codegraph
