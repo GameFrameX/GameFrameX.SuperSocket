@@ -40,6 +40,35 @@ Nightly build packages:  https://www.myget.org/F/supersocket/api/v3/index.json
 
 ---
 
+## Transport Selection
+
+TCP remains the default transport. UDP and KCP are explicit opt-in transports:
+
+```csharp
+// TCP: default server/client connection path.
+builder.UsePackageHandler(...);
+
+// Raw UDP: unreliable datagram transport.
+builder.UseUdp();
+client.AsUdp(new IPEndPoint(IPAddress.Loopback, 4040));
+
+// KCP: reliable transport over UDP datagrams, not a TCP wrapper.
+builder.UseKcp(options =>
+{
+    // Unset options keep KCP's internal defaults; set only the values you need to tune.
+    options.NoDelay = true;
+    options.Interval = 10;
+    options.DeadLink = 120; // Raise this for minute-level blackout recovery.
+});
+
+client.AsKcp(new IPEndPoint(IPAddress.Loopback, 4040), new KcpConnectionOptions
+{
+    Conv = 0 // 0 lets the client generate a conversation id.
+});
+```
+
+---
+
 ## SuperSocket 2.0 Roadmap:
 
 - 2024:

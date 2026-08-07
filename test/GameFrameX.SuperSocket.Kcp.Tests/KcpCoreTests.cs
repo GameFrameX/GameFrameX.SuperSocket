@@ -231,6 +231,58 @@ namespace GameFrameX.SuperSocket.Kcp.Tests
             Assert.Fail("Failed to receive data after 50 iterations with packet loss");
         }
 
+        [Fact]
+        public void With_Minute_Blackout_And_Extended_DeadLink_Should_Retransmit_And_Deliver()
+        {
+            var senderPackets = new List<Memory<byte>>();
+            var receiverPackets = new List<Memory<byte>>();
+            var sender = CreateKcp(TestConv, data => senderPackets.Add(data.ToArray()));
+            var receiver = CreateKcp(TestConv, data => receiverPackets.Add(data.ToArray()));
+
+            sender.SetFastMode();
+            receiver.SetFastMode();
+            sender.DeadLink = 120;
+
+            var sendData = System.Text.Encoding.UTF8.GetBytes("Hello KCP after minute blackout!");
+            Assert.Equal(sendData.Length, sender.Send(sendData));
+
+            var currentTime = GetTimestamp();
+
+            for (var i = 0; i < 24000; i++)
+            {
+                currentTime += 10;
+                senderPackets.Clear();
+                receiverPackets.Clear();
+
+                sender.Update(currentTime);
+                receiver.Update(currentTime);
+
+                if (i >= 6000)
+                {
+                    foreach (var packet in senderPackets)
+                    {
+                        receiver.Input(packet.Span);
+                    }
+
+                    foreach (var packet in receiverPackets)
+                    {
+                        sender.Input(packet.Span);
+                    }
+                }
+
+                if (!receiver.PeekCanRecv())
+                    continue;
+
+                var recvBuffer = new byte[1024];
+                var len = receiver.Recv(recvBuffer);
+                Assert.Equal(sendData.Length, len);
+                Assert.Equal(sendData, recvBuffer.AsSpan(0, len).ToArray());
+                return;
+            }
+
+            Assert.Fail("Failed to receive data after simulated 60 seconds blackout.");
+        }
+
         #endregion
 
         #region === 窗口与 MTU 测试 ===

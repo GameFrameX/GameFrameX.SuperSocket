@@ -33,7 +33,7 @@ namespace GameFrameX.SuperSocket.Client
         /// <summary>
         /// Gets the connection options for the client.
         /// </summary>
-        protected ConnectionOptions Options { get; private set; }
+        protected internal ConnectionOptions Options { get; private set; }
 
         /// <summary>
         /// Gets or sets the local endpoint for the client.
@@ -263,7 +263,7 @@ namespace GameFrameX.SuperSocket.Client
         /// Sets up the connection for the client.
         /// </summary>
         /// <param name="connection">The connection to set up.</param>
-        protected virtual void SetupConnection(IConnection connection)
+        protected internal virtual void SetupConnection(IConnection connection)
         {
             connection.Closed += OnConnectionClosed;
             Connection = connection;
@@ -334,7 +334,7 @@ namespace GameFrameX.SuperSocket.Client
         /// </summary>
         /// <param name="message">The error message.</param>
         /// <param name="exception">The exception that occurred.</param>
-        protected virtual void OnError(string message, Exception exception)
+        protected internal virtual void OnError(string message, Exception exception)
         {
             Logger?.LogError(exception, message);
         }
@@ -343,7 +343,7 @@ namespace GameFrameX.SuperSocket.Client
         /// Handles errors that occur during client operations.
         /// </summary>
         /// <param name="message">The error message.</param>
-        protected virtual void OnError(string message)
+        protected internal virtual void OnError(string message)
         {
             Logger?.LogError(message);
         }
@@ -496,7 +496,7 @@ namespace GameFrameX.SuperSocket.Client
         /// Sets up the connection for the client.
         /// </summary>
         /// <param name="connection">The connection to set up.</param>
-        protected override void SetupConnection(IConnection connection)
+        protected internal override void SetupConnection(IConnection connection)
         {
             base.SetupConnection(connection);
             _packageStream = connection.GetPackageStream(_pipelineFilter);

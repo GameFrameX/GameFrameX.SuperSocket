@@ -13,3 +13,5 @@ _ReSharper.*
 test/SuperSocket.Benchmarks/BenchmarkDotNet.Artifacts
 e2e
 .idea
+gfx-doc
+.codegraph

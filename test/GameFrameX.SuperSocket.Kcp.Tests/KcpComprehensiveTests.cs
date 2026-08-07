@@ -997,6 +997,22 @@ namespace GameFrameX.SuperSocket.Kcp.Tests
         }
 
         /// <summary>
+        /// 测试 KcpConvIdentifierProvider 支持非 IP 端点。
+        /// </summary>
+        [Fact]
+        public void ConvIdentifierProvider_Should_Accept_Dns_EndPoint()
+        {
+            var provider = new KcpConvIdentifierProvider();
+            var ep = new System.Net.DnsEndPoint("game.example.com", 8080);
+
+            var data = new byte[24];
+            System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(data, 7);
+
+            var id = provider.GetSessionIdentifier(ep, data);
+            Assert.Equal("game.example.com:8080:7", id);
+        }
+
+        /// <summary>
         /// 测试 KcpConvIdentifierProvider 数据太短时抛异常。
         /// </summary>
         [Fact]
@@ -1108,17 +1124,77 @@ namespace GameFrameX.SuperSocket.Kcp.Tests
         {
             var opts = new KcpConnectionOptions();
             Assert.Equal(0u, opts.Conv);
-            Assert.Equal(1400u, opts.Mtu);
-            Assert.Equal(256, opts.SendWindow);
-            Assert.Equal(256, opts.ReceiveWindow);
-            Assert.True(opts.NoDelay);
-            Assert.Equal(1, opts.NoDelayLevel);
-            Assert.Equal(10, opts.Interval);
-            Assert.Equal(0, opts.Resend);
-            Assert.True(opts.NoCongestionControl);
-            Assert.Equal(120, opts.IdleTimeout);
-            Assert.Equal(1024, opts.SegmentPoolSize);
-            Assert.False(opts.StreamMode);
+            Assert.Null(opts.Mtu);
+            Assert.Null(opts.SendWindow);
+            Assert.Null(opts.ReceiveWindow);
+            Assert.Null(opts.NoDelay);
+            Assert.Null(opts.NoDelayLevel);
+            Assert.Null(opts.Interval);
+            Assert.Null(opts.Resend);
+            Assert.Null(opts.DeadLink);
+            Assert.Null(opts.NoCongestionControl);
+            Assert.Null(opts.IdleTimeout);
+            Assert.Null(opts.MaxDatagramSize);
+            Assert.Null(opts.SegmentPoolSize);
+            Assert.Null(opts.StreamMode);
+            Assert.Null(opts.FastAckLimit);
+            Assert.Null(opts.InitialRto);
+            Assert.Null(opts.MinRto);
+            Assert.Null(opts.MaxRto);
+            Assert.Null(opts.ProbeInit);
+            Assert.Null(opts.ProbeLimit);
+            Assert.Null(opts.InitialCongestionWindow);
+            Assert.Null(opts.SlowStartThreshold);
+        }
+
+        /// <summary>
+        /// 测试 KCP 核心内部默认值与可选配置覆盖。
+        /// </summary>
+        [Fact]
+        public void KcpCore_Defaults_And_Optional_Overrides_Should_Work()
+        {
+            var kcp = new KcpCore(ConvA);
+            Assert.Equal((uint)KcpConstants.IKCP_MTU_DEF, kcp.Mtu);
+            Assert.Equal((uint)KcpConstants.IKCP_WND_SND, kcp.SendWindow);
+            Assert.Equal((uint)KcpConstants.IKCP_WND_RCV, kcp.ReceiveWindow);
+            Assert.Equal((uint)KcpConstants.IKCP_INTERVAL, kcp.Interval);
+            Assert.False(kcp.NoDelay);
+            Assert.False(kcp.NoCongestionControl);
+            Assert.False(kcp.StreamMode);
+            Assert.Equal(KcpConstants.IKCP_FASTACK_LIMIT, kcp.FastAckLimit);
+            Assert.Equal(KcpConstants.IKCP_RTO_DEF, kcp.Rto);
+            Assert.Equal(KcpConstants.IKCP_RTO_MIN, kcp.MinRto);
+            Assert.Equal(KcpConstants.IKCP_RTO_MAX, kcp.MaxRto);
+            Assert.Equal(KcpConstants.IKCP_PROBE_INIT, kcp.ProbeInit);
+            Assert.Equal(KcpConstants.IKCP_PROBE_LIMIT, kcp.ProbeLimit);
+
+            kcp.SetMtu(1200);
+            kcp.SetWindowSize(64, 96);
+            kcp.ConfigureNoDelay(true, 2, 20, 3, true, false);
+            kcp.DeadLink = 120;
+            kcp.SetFastAckLimit(9);
+            kcp.ConfigureRto(300, 50, 2000);
+            kcp.SetProbeIntervals(5000, 30000);
+            kcp.SetInitialCongestionWindow(8);
+            kcp.SetSlowStartThreshold(128);
+
+            Assert.Equal(1200u, kcp.Mtu);
+            Assert.Equal(64u, kcp.SendWindow);
+            Assert.Equal(96u, kcp.ReceiveWindow);
+            Assert.True(kcp.NoDelay);
+            Assert.Equal(20u, kcp.Interval);
+            Assert.Equal(3, kcp.FastResend);
+            Assert.True(kcp.NoCongestionControl);
+            Assert.False(kcp.StreamMode);
+            Assert.Equal(120, kcp.DeadLink);
+            Assert.Equal(9, kcp.FastAckLimit);
+            Assert.Equal(300, kcp.Rto);
+            Assert.Equal(50, kcp.MinRto);
+            Assert.Equal(2000, kcp.MaxRto);
+            Assert.Equal(5000, kcp.ProbeInit);
+            Assert.Equal(30000, kcp.ProbeLimit);
+            Assert.Equal(8u, kcp.CongestionWindow);
+            Assert.Equal(128u, kcp.SlowStartThreshold);
         }
 
         #endregion
