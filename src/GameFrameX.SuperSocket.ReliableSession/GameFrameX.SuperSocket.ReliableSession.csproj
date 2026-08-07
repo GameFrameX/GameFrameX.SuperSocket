@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>GameFrameX ReliableSession protocol model and codec library. GameFrameX 框架的 ReliableSession 协议模型与编解码库. 框架文档主页: https://gameframex.doc.alianblank.com</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameFrameX.SuperSocket.ProtoBase\GameFrameX.SuperSocket.ProtoBase.csproj" />
+    </ItemGroup>
+</Project>

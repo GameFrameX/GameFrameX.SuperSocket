@@ -38,33 +38,181 @@ extended, so it is easy to be integrated to your existing systems as long as the
 
 Nightly build packages:  https://www.myget.org/F/supersocket/api/v3/index.json
 
+GameFrameX additions in this fork include `GameFrameX.SuperSocket.Kcp` for KCP transport and
+`GameFrameX.SuperSocket.ReliableSession` for the ReliableSession protocol model and codec.
+
 ---
 
 ## Transport Selection
 
-TCP remains the default transport. UDP and KCP are explicit opt-in transports:
+TCP remains the default transport. UDP, KCP, and ReliableSession are explicit choices:
+
+| Choice | Use when | Current behavior |
+|:---|:---|:---|
+| TCP | You want the standard SuperSocket connection path. | Default server/client transport. |
+| Raw UDP | You want datagram delivery and can tolerate loss, duplication, and reordering yourself. | Explicit opt-in with `UseUdp()` / `AsUdp(...)`; unreliable datagram transport. |
+| KCP | You want reliable delivery over UDP datagrams with KCP retransmission/window control. | Explicit opt-in with `UseKcp(...)` / `AsKcp(...)`; not KCP-over-TCP. |
+| ReliableSession | You need a protocol contract for logical session resume, replay cursors, ack ranges, snapshot fallback, and close/error frames. | Protocol model and binary codec only. Runtime heartbeats, resume state, replay cache, dedup cache, adapters, and business delivery are not implemented in C3. |
+
+### Server: enable KCP
+
+Reference `GameFrameX.SuperSocket.Kcp`, keep your normal package pipeline and handler, then add
+`UseKcp(...)` to the host builder:
 
 ```csharp
-// TCP: default server/client connection path.
-builder.UsePackageHandler(...);
+using System.Text;
+using GameFrameX.SuperSocket.Kcp;
+using GameFrameX.SuperSocket.ProtoBase;
+using GameFrameX.SuperSocket.Server.Host;
 
-// Raw UDP: unreliable datagram transport.
-builder.UseUdp();
-client.AsUdp(new IPEndPoint(IPAddress.Loopback, 4040));
+var builder = SuperSocketHostBuilder
+    .Create<TextPackageInfo, LinePipelineFilter>()
+    .UseKcp(options =>
+    {
+        // Unset nullable options keep KCP's internal defaults.
+        options.NoDelay = true;
+        options.NoDelayLevel = 1;
+        options.Interval = 10;
+        options.Resend = 2;
+        options.NoCongestionControl = true;
+        options.SendWindow = 512;
+        options.ReceiveWindow = 512;
+        options.MaxDatagramSize = 4096;
 
-// KCP: reliable transport over UDP datagrams, not a TCP wrapper.
-builder.UseKcp(options =>
+        // Raise this explicitly when you expect minute-level packet blackout.
+        options.DeadLink = 120;
+    })
+    .UsePackageHandler(async (session, package) =>
+    {
+        // Handle the decoded SuperSocket package exactly as you do on TCP.
+        await session.SendAsync(Encoding.UTF8.GetBytes(package.Text + "\r\n"));
+    });
+```
+
+`UseKcp(...)` registers the KCP listener/factory and the default in-process session container when
+one has not already been registered. The default KCP server session identity is built from the
+remote endpoint plus the KCP `Conv` read from the incoming UDP packet. Endpoint/NAT migration is
+therefore not supported by the KCP transport layer alone.
+
+### Client: use KCP
+
+Reference `GameFrameX.SuperSocket.Kcp`, configure `EasyClient` with `AsKcp(...)`, and then use the
+normal receive/send APIs on the client:
+
+```csharp
+using System.Net;
+using System.Text;
+using GameFrameX.SuperSocket.Client;
+using GameFrameX.SuperSocket.Kcp;
+using GameFrameX.SuperSocket.ProtoBase;
+
+var remoteEndPoint = new IPEndPoint(IPAddress.Loopback, 4040);
+var client = new EasyClient<TextPackageInfo>(new LinePipelineFilter());
+
+client.AsKcp(remoteEndPoint, new KcpConnectionOptions
 {
-    // Unset options keep KCP's internal defaults; set only the values you need to tune.
-    options.NoDelay = true;
-    options.Interval = 10;
-    options.DeadLink = 120; // Raise this for minute-level blackout recovery.
+    // Conv = 0 lets the client generate a non-zero conversation id.
+    Conv = 0,
+    NoDelay = true,
+    NoDelayLevel = 1,
+    Interval = 10,
+    Resend = 2,
+    MaxDatagramSize = 4096
 });
 
-client.AsKcp(new IPEndPoint(IPAddress.Loopback, 4040), new KcpConnectionOptions
+client.StartReceive();
+await ((IEasyClient)client).SendAsync(Encoding.UTF8.GetBytes("ping\r\n"));
+```
+
+`AsKcp(...)` creates and binds a UDP socket, assigns or generates `Conv`, creates a `KcpPipeConnection`,
+starts the KCP update loop, and starts receiving UDP packets for that connection. Set
+`client.LocalEndPoint` before `AsKcp(...)` when the client must bind a specific local UDP endpoint.
+
+### KCP configuration notes
+
+- Leave nullable options unset unless you have a measured reason to tune them; unset values keep KCP
+  internal defaults.
+- For realtime game-style traffic, common starting points are `NoDelay = true`, `NoDelayLevel = 1`,
+  `Interval = 10`, `Resend = 2`, and tuned send/receive windows.
+- For conservative throughput, keep more defaults and avoid disabling congestion control.
+- `DeadLink` is the maximum retransmission count for one KCP segment. The internal default is not a
+  minute-level blackout policy; raise it deliberately when your acceptance condition requires longer
+  blackout tolerance.
+- `IdleTimeout` belongs to the connection lifetime layer. It is not a logical session recovery window.
+- `MaxDatagramSize` should fit your network MTU strategy. Oversized UDP datagrams raise fragmentation
+  and loss risk.
+
+### ReliableSession protocol model
+
+Reference `GameFrameX.SuperSocket.ReliableSession` when you need the protocol frame contract and
+binary codec:
+
+```csharp
+using System.Text;
+using GameFrameX.SuperSocket.ReliableSession;
+
+var codec = new ReliableSessionFrameCodec();
+var sessionId = new SessionId(Guid.NewGuid());
+
+var hello = new ReliableSessionHelloFrame
 {
-    Conv = 0 // 0 lets the client generate a conversation id.
-});
+    ClientInstanceId = new ClientInstanceId(Guid.NewGuid()),
+    ProtocolVersion = ReliableSessionProtocol.WireVersion,
+    RequestedOptions = new ReliableSessionHandshakeOptions
+    {
+        HeartbeatInterval = TimeSpan.FromSeconds(5),
+        HeartbeatTimeout = TimeSpan.FromSeconds(15),
+        RecoveryWindow = TimeSpan.FromMinutes(2),
+        ReplayWindowSize = 1024
+    }
+};
+
+var helloBytes = codec.Encode(hello);
+var decodedHello = (ReliableSessionHelloFrame)codec.Decode(helloBytes);
+
+var data = new ReliableSessionDataFrame
+{
+    SessionId = sessionId,
+    MessageId = new MessageId(1),
+    Sequence = new Sequence(1),
+    Payload = Encoding.UTF8.GetBytes("move:1,2")
+};
+
+var dataBytes = codec.Encode(data);
+var decodedData = (ReliableSessionDataFrame)codec.Decode(dataBytes);
+
+var ack = new ReliableSessionAckFrame
+{
+    SessionId = sessionId,
+    Ranges = new[] { new AckRange(new Sequence(1), new Sequence(1)) }
+};
+
+var ackBytes = codec.Encode(ack);
+var decodedAck = (ReliableSessionAckFrame)codec.Decode(ackBytes);
+```
+
+ReliableSession currently defines and validates these frame kinds: `Hello`, `HelloAck`, `Resume`,
+`ResumeAck`, `Heartbeat`, `Data`, `Ack`, `SnapshotRequest`, `Snapshot`, `Close`, and `Error`.
+The codec expects one complete ReliableSession frame per buffer; transport stream splitting/framing
+belongs in a later adapter.
+
+Current boundaries:
+
+- No server/client runtime switch enables ReliableSession yet.
+- No automatic heartbeat timer, reconnect loop, resume-token store, replay cache, dedup cache, or
+  snapshot provider is included yet.
+- KCP keeps using endpoint plus `Conv` as its transport session identity. ReliableSession's
+  `SessionId` plus `ResumeToken` is the future logical-session resume contract, not current KCP
+  endpoint migration support.
+- C3 test coverage is protocol/codec end-to-end coverage, including lifecycle, 10s/30s/60s blackout
+  resume scripts, replay, snapshot fallback, duplicate/reordered frames, and ack ranges. It is not
+  runtime transport integration coverage.
+
+Validation entry points:
+
+```bash
+dotnet test GameFrameX.SuperSocket.slnx
+dotnet test test/GameFrameX.SuperSocket.ReliableSession.Tests/GameFrameX.SuperSocket.ReliableSession.Tests.csproj
 ```
 
 ---
