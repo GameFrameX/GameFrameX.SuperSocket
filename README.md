@@ -1,49 +1,78 @@
-# SuperSocket
+<div align="center">
 
-[![Join the chat at https://gitter.im/supersocket/community](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/supersocket/community)
-[![Build](https://github.com/kerryjiang/SuperSocket/workflows/build/badge.svg)](https://github.com/kerryjiang/SuperSocket/actions?query=workflow%3Abuild)
-[![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.svg?style=flat)](https://www.nuget.org/packages/SuperSocket/)
-[![NuGet](https://img.shields.io/nuget/dt/SuperSocket.svg)](https://www.nuget.org/packages/SuperSocket)
-[![Badge](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu/#/en_US)
+<img src="https://download.alianblank.com/gameframex/gameframex_logo_320.png" alt="Game Frame X Logo" width="160" />
 
-**SuperSocket** is a light weight extensible socket application framework. You can use it to build an always connected socket application easily without thinking about how to use socket, how to maintain the socket connections and how socket works. It is a pure C# project which is designed to be
-extended, so it is easy to be integrated to your existing systems as long as they are developed in .NET language.
+# GameFrameX.SuperSocket
 
-- **Project homepage**:        [https://www.supersocket.net/](https://www.supersocket.net/)
-- **Documentation**:        [https://docs.supersocket.net/](https://docs.supersocket.net/)
-- **License**:                [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+[![License](https://img.shields.io/badge/license-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/nuget/v/GameFrameX.SuperSocket.Server)](https://www.nuget.org/packages/GameFrameX.SuperSocket.Server)
+[![Documentation](https://img.shields.io/badge/docs-gameframex-brightgreen.svg)](https://gameframex.doc.alianblank.com)
 
----
+[![Discord](https://img.shields.io/badge/-5865F2?logo=discord&logoColor=white)](https://discord.gg/VDWUjWMDw9)
+[![GitHub](https://img.shields.io/badge/-181717?logo=github&logoColor=white)](https://github.com/GameFrameX/gameframex)
+[![Bilibili](https://img.shields.io/badge/-00A1D6?logo=bilibili&logoColor=white)](https://www.bilibili.com/video/BV1yrpeepEn7)
+[![Gitee](https://img.shields.io/badge/-C71D23?logo=gitee&logoColor=white)](https://gitee.com/GameFrameX/gameframex)
 
-##### Nuget Packages
+**All-in-One Solution for Indie Game Development · Empowering Indie Developers' Dreams**
 
-| Package                                                                               |                                                                                   MyGet Version                                                                                   |                                                                          NuGet Version                                                                          |                                                                            Download                                                                            |
-|:--------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| **SuperSocket**  <br /> (all in one)                                                  |                  [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket)                  |                  [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.svg?style=flat)](https://www.nuget.org/packages/SuperSocket/)                  |                  [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.svg?style=flat)](https://www.nuget.org/packages/SuperSocket/)                  |
-| ~~**SuperSocket.WebSocketServer**~~ <br /> (Use SuperSocket.WebSocket.Server instead) |  [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.WebSocketServer)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.WebSocketServer)  |  [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.WebSocketServer.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.WebSocketServer/)  |  [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.WebSocketServer.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.WebSocketServer/)  |
-| **SuperSocket.ProtoBase**                                                             |        [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.ProtoBase)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.ProtoBase)        |        [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.ProtoBase.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.ProtoBase/)        |        [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.ProtoBase.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.ProtoBase/)        |
-| **SuperSocket.Primitives**                                                            |       [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.Primitives)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.Primitives)       |       [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.Primitives.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Primitives/)       |       [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.Primitives.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Primitives/)       |
-| ~~**SuperSocket.Channel**~~                                                           |          [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.Channel)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.Channel)          |          [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.Channel.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Channel/)          |          [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.Channel.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Channel/)          |
-| **SuperSocket.Connection**                                                            |       [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.Connection)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.Connection)       |       [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.Connection.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Connection/)       |       [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.Connection.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Connection/)       |
-| **SuperSocket.Server**                                                                |           [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.Server)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.Server)           |           [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.Server.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Server/)           |           [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.Server.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Server/)           |
-| **SuperSocket.Command**                                                               |          [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.Command)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.Command)          |          [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.Command.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Command/)          |          [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.Command.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Command/)          |
-| ~~**SuperSocket.SessionContainer**~~                                                  | [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.SessionContainer)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.SessionContainer) | [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.SessionContainer.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.SessionContainer/) | [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.SessionContainer.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.SessionContainer/) |
-| **SuperSocket.Client**                                                                |           [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.Client)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.Client)           |           [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.Client.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Client/)           |           [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.Client.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Client/)           |
-| **SuperSocket.Client.Proxy**                                                          |     [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.Client.Proxy)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.Client.Proxy)     |     [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.Client.Proxy.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Client.Proxy/)     |     [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.Client.Proxy.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Client.Proxy/)     |
-| **SuperSocket.WebSocket**                                                             |        [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.WebSocket)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.WebSocket)        |        [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.WebSocket.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.WebSocket/)        |        [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.WebSocket.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.WebSocket/)        |
-| **SuperSocket.WebSocket.Server**                                                      | [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.WebSocket.Server)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.WebSocket.Server) | [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.WebSocket.Server.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.WebSocket.Server/) | [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.WebSocket.Server.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.WebSocket.Server/) |
-| **SuperSocket.Udp**                                                                   |              [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.Udp)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.Udp)              |              [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.Udp.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Udp/)              |              [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.Udp.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.Udp/)              |
-| ~~**SuperSocket.GZip**~~                                                              |             [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.GZip)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.GZip)             |             [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.GZip.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.GZip/)             |             [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.GZip.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.GZip/)             |
-| **SuperSocket.SerialIO**                                                              |         [![MyGet Version](https://img.shields.io/myget/supersocket/vpre/SuperSocket.SerialIO)](https://www.myget.org/feed/supersocket/package/nuget/SuperSocket.SerialIO)         |         [![NuGet Version](https://img.shields.io/nuget/vpre/SuperSocket.SerialIO.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.SerialIO/)         |         [![NuGet Download](https://img.shields.io/nuget/dt/SuperSocket.SerialIO.svg?style=flat)](https://www.nuget.org/packages/SuperSocket.SerialIO/)         |
+<br />
 
-Nightly build packages:  https://www.myget.org/F/supersocket/api/v3/index.json
+[Documentation](https://gameframex.doc.alianblank.com) · [Quick Start](#quick-start) · QQ Group: 467608841 / 233840761
 
-GameFrameX additions in this fork include `GameFrameX.SuperSocket.Kcp` for KCP transport and
-`GameFrameX.SuperSocket.ReliableSession` for the ReliableSession protocol model and codec.
+<br />
 
----
+**English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
 
-## Transport Selection
+</div>
+
+## Project Overview
+
+GameFrameX.SuperSocket is the GameFrameX maintained fork of [SuperSocket](https://github.com/kerryjiang/SuperSocket) — a light weight extensible socket application framework written in pure C#. You can use it to build an always connected socket application easily without thinking about how to use socket, how to maintain the socket connections and how socket works.
+
+The upstream architecture and public APIs are preserved, so a project written against SuperSocket keeps working. On top of that this fork carries the changes GameFrameX game servers need: the .NET 10 build target, DI/constructor injection support, and the KCP / ReliableSession protocol adaptations for weak-network game traffic.
+
+### Features
+
+- Light weight and extensible — build always connected socket applications without managing sockets by hand.
+- Pure C#, so it integrates into any existing .NET system.
+- Protocol decoding pipeline with pipeline filters and package decoders.
+- TCP is the default transport; UDP, KCP and ReliableSession are explicit opt-ins.
+- KCP transport for reliable delivery over UDP datagrams, with retransmission and window control.
+- ReliableSession protocol frame contract and binary codec for logical session resume, replay cursors, ack ranges, snapshot fallback and close/error frames.
+- Command pattern request handling.
+- WebSocket server and client, plus Kestrel integration.
+- DI / constructor injection friendly host builder.
+- .NET 10 build target.
+
+## Quick Start
+
+### Installation
+
+Install the modules you need from NuGet.org:
+
+```bash
+dotnet add package GameFrameX.SuperSocket.Server
+dotnet add package GameFrameX.SuperSocket.ProtoBase
+```
+
+The `Kcp` and `ReliableSession` modules come with the next release; until then, build them from a source checkout:
+
+```bash
+git clone https://github.com/GameFrameX/GameFrameX.SuperSocket.git
+cd GameFrameX.SuperSocket
+dotnet build GameFrameX.SuperSocket.slnx
+```
+
+Run the test suite from the same checkout:
+
+```bash
+dotnet test GameFrameX.SuperSocket.slnx
+dotnet test test/GameFrameX.SuperSocket.ReliableSession.Tests/GameFrameX.SuperSocket.ReliableSession.Tests.csproj
+```
+
+## Usage Examples
+
+### Transport Selection
 
 TCP remains the default transport. UDP, KCP, and ReliableSession are explicit choices:
 
@@ -54,7 +83,7 @@ TCP remains the default transport. UDP, KCP, and ReliableSession are explicit ch
 | KCP | You want reliable delivery over UDP datagrams with KCP retransmission/window control. | Explicit opt-in with `UseKcp(...)` / `AsKcp(...)`; not KCP-over-TCP. |
 | ReliableSession | You need a protocol contract for logical session resume, replay cursors, ack ranges, snapshot fallback, and close/error frames. | Protocol model and binary codec only. Runtime heartbeats, resume state, replay cache, dedup cache, adapters, and business delivery are not implemented in C3. |
 
-### Server: enable KCP
+### Server: Enable KCP
 
 Reference `GameFrameX.SuperSocket.Kcp`, keep your normal package pipeline and handler, then add
 `UseKcp(...)` to the host builder:
@@ -94,7 +123,7 @@ one has not already been registered. The default KCP server session identity is 
 remote endpoint plus the KCP `Conv` read from the incoming UDP packet. Endpoint/NAT migration is
 therefore not supported by the KCP transport layer alone.
 
-### Client: use KCP
+### Client: Use KCP
 
 Reference `GameFrameX.SuperSocket.Kcp`, configure `EasyClient` with `AsKcp(...)`, and then use the
 normal receive/send APIs on the client:
@@ -128,7 +157,7 @@ await ((IEasyClient)client).SendAsync(Encoding.UTF8.GetBytes("ping\r\n"));
 starts the KCP update loop, and starts receiving UDP packets for that connection. Set
 `client.LocalEndPoint` before `AsKcp(...)` when the client must bind a specific local UDP endpoint.
 
-### KCP configuration notes
+### KCP Configuration Notes
 
 - Leave nullable options unset unless you have a measured reason to tune them; unset values keep KCP
   internal defaults.
@@ -142,7 +171,7 @@ starts the KCP update loop, and starts receiving UDP packets for that connection
 - `MaxDatagramSize` should fit your network MTU strategy. Oversized UDP datagrams raise fragmentation
   and loss risk.
 
-### ReliableSession protocol model
+### ReliableSession Protocol Model
 
 Reference `GameFrameX.SuperSocket.ReliableSession` when you need the protocol frame contract and
 binary codec:
@@ -208,20 +237,80 @@ Current boundaries:
   resume scripts, replay, snapshot fallback, duplicate/reordered frames, and ack ranges. It is not
   runtime transport integration coverage.
 
-Validation entry points:
+## Architecture
 
-```bash
-dotnet test GameFrameX.SuperSocket.slnx
-dotnet test test/GameFrameX.SuperSocket.ReliableSession.Tests/GameFrameX.SuperSocket.ReliableSession.Tests.csproj
-```
+The modules layer from protocol primitives up to the host:
 
----
+- `Primitives` / `ProtoBase` — primitive interfaces and protocol decoding.
+- `Connection` / `Channel` — the underlying communications abstraction and the request pipeline.
+- `Server` / `Server.Abstractions` / `Client` / `ClientEngine` / `Client.Proxy` — host, server and client endpoints.
+- `Command` — command pattern request handling on top of the server.
+- `Udp` / `Kcp` / `ReliableSession` — the optional transports and the logical session protocol.
+- `WebSocket` / `WebSocket.Server` / `Kestrel` / `Http` — HTTP-family protocols and hosting.
 
-## SuperSocket 2.0 Roadmap:
+## Platform Support
 
-- 2024:
-    - More documents
-    - Performance test/tuning
-    - Fix issues of the existing features
-    - Other features requested by users
-    - Stable release
+- .NET 10.0
+- Windows, macOS, Linux
+
+## Dependencies
+
+| Module | Package | Description |
+|:---|:---|:---|
+| Primitives | `GameFrameX.SuperSocket.Primitives` | Primitive interfaces and classes |
+| ProtoBase | `GameFrameX.SuperSocket.ProtoBase` | Protocol decoding |
+| Connection | `GameFrameX.SuperSocket.Connection` | Underlying communications abstraction with pipeline |
+| Server Abstractions | `GameFrameX.SuperSocket.Server.Abstractions` | Server abstractions |
+| Server | `GameFrameX.SuperSocket.Server` | Server host |
+| Client | `GameFrameX.SuperSocket.Client` | Client endpoints |
+| Client Engine | `GameFrameX.SuperSocket.ClientEngine` | Client engine |
+| Client Proxy | `GameFrameX.SuperSocket.Client.Proxy` | Client proxy support |
+| Command | `GameFrameX.SuperSocket.Command` | Command pattern request handling |
+| Udp | `GameFrameX.SuperSocket.Udp` | UDP transport |
+| Kcp | `GameFrameX.SuperSocket.Kcp` | KCP transport over UDP |
+| ReliableSession | `GameFrameX.SuperSocket.ReliableSession` | ReliableSession protocol model and codec |
+| WebSocket | `GameFrameX.SuperSocket.WebSocket` | WebSocket protocol implementation |
+| WebSocket Server | `GameFrameX.SuperSocket.WebSocket.Server` | WebSocket server |
+| Kestrel | `GameFrameX.SuperSocket.Kestrel` | Kestrel integration |
+| Http | `GameFrameX.SuperSocket.Http` | Shared utilities for HTTP-like protocols |
+
+Beyond the .NET base class library, the modules depend on `Microsoft.Extensions.*`
+(Configuration, DependencyInjection, Hosting, Logging, Options), `System.IO.Pipelines`, and the
+`Microsoft.AspNetCore.App` framework reference for the Kestrel module.
+
+## Documentation & Resources
+
+- [Documentation](https://gameframex.doc.alianblank.com)
+- [GitHub Repository](https://github.com/GameFrameX/GameFrameX.SuperSocket)
+- [Issue Tracker](https://github.com/GameFrameX/GameFrameX.SuperSocket/issues)
+- [Upstream Project](https://github.com/kerryjiang/SuperSocket)
+- [Upstream Documentation](https://docs.supersocket.net/)
+
+## Community & Support
+
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GameFrameX/gameframex)
+[![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/VDWUjWMDw9)
+[<img src="https://cdn.jsdelivr.net/npm/devicon@2/icons/linkedin/linkedin-original.svg" height="28" alt="LinkedIn" />](https://www.linkedin.com/in/alianblank)
+[![Reddit](https://img.shields.io/badge/Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/r/GameFrameX/)
+[![X](https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/alian_blank)
+[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/channel/UCD9QhSFJ5xZkn5NTSV-DVAw)
+[![Bluesky](https://img.shields.io/badge/Bluesky-0285FF?style=for-the-badge&logo=bluesky&logoColor=white)](https://bsky.app/profile/alianblank.bsky.social)
+[![Bilibili](https://img.shields.io/badge/Bilibili-00A1D6?style=for-the-badge&logo=bilibili&logoColor=white)](https://www.bilibili.com/video/BV1yrpeepEn7)
+[![Gitee](https://img.shields.io/badge/Gitee-C71D23?style=for-the-badge&logo=gitee&logoColor=white)](https://gitee.com/GameFrameX/gameframex)
+![QQ](https://img.shields.io/badge/QQ-467608841%2F233840761-EB1923?style=for-the-badge&logo=qq&logoColor=white)
+
+## Changelog
+
+See [Releases](https://github.com/GameFrameX/GameFrameX.SuperSocket/releases) for the version history.
+
+## License
+
+See [LICENSE](LICENSE) for license information.
+
+<!--
+EN: See [LICENSE](LICENSE) for license information.
+zh-CN: 详见 [LICENSE](LICENSE) 文件。
+zh-TW: 詳見 [LICENSE](LICENSE) 檔案。
+ja: 詳しくは [LICENSE](LICENSE) をご参照ください。
+ko: 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+-->
