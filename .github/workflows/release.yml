@@ -1,0 +1,12 @@
+name: Publish Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    uses: GameFrameX/public-github-actions/.github/workflows/publish-dotnet-release.yml@main
+    with:
+      dotnet_version: "10.0.x"
+      version_props_path: "Directory.Build.props"
+    secrets: inherit

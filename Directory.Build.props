@@ -5,6 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <!-- 发布流水线在发版时替换该值，本地构建与 CI 打包均以它作为包版本 -->
+        <Version>1.2.0</Version>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU' and '$(OutputPath)'==''">
         <OutputPath>$(MSBuildThisFileDirectory)bin/app_debug/</OutputPath>
