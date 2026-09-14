@@ -48,7 +48,7 @@
         <None Include="../../releaseNotes/v$(PackageVersion).md" Pack="true" PackagePath="/"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All"/>
     </ItemGroup>
     <ItemGroup Condition="$(IsPackable) != False AND '$(OutputType)' != 'Exe'">
         <Compile Include="..\..\InternalsVisibleTo.cs"/>

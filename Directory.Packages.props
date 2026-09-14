@@ -1,0 +1,32 @@
+<Project>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup Label="运行时扩展库">
+        <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.12"/>
+        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.12"/>
+        <PackageVersion Include="System.IO.Pipelines" Version="10.0.12"/>
+        <PackageVersion Include="System.Text.Json" Version="10.0.12"/>
+    </ItemGroup>
+
+    <ItemGroup Label="构建与发布">
+        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401"/>
+    </ItemGroup>
+
+    <ItemGroup Label="测试">
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.0"/>
+        <PackageVersion Include="xunit" Version="2.9.3"/>
+        <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0"/>
+    </ItemGroup>
+</Project>
