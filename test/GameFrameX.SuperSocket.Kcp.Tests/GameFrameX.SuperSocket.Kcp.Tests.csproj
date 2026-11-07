@@ -12,6 +12,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <ProjectReference Include="..\..\src\GameFrameX.SuperSocket.Server\GameFrameX.SuperSocket.Server.csproj"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\src\GameFrameX.SuperSocket.Kcp\GameFrameX.SuperSocket.Kcp.csproj"/>

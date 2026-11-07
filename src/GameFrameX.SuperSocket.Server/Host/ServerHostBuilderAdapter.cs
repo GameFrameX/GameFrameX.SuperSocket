@@ -204,7 +204,14 @@ namespace GameFrameX.SuperSocket.Server.Host
             }
             else
             {
-                servicesInHost.AddHostedService<THostedService>(s => GetHostedService<THostedService>());
+                // .NET 10 起 AddHostedService 改为 TryAddEnumerable 语义：同 ServiceType + 同实现形态的第二次注册会被静默去重丢弃。
+                // 多服务器宿主下（如 TCP 与 KCP 同用 SuperSocketService<TReceivePackage>），后注册的服务器会整体不启动。
+                // 宿主容器内的各服务器宿主服务必须无条件注册，改用直接 Add。
+                // Since .NET 10, AddHostedService uses TryAddEnumerable semantics: a second registration with the same
+                // service type and implementation shape is silently deduplicated away. Under a multi-server host (e.g. TCP and
+                // KCP both closing over SuperSocketService<TReceivePackage>), every server registered after the first would
+                // never start. Server hosted services in the host container must be added unconditionally.
+                servicesInHost.Add(ServiceDescriptor.Singleton<IHostedService>(s => GetHostedService<THostedService>()));
             }
         }
 
