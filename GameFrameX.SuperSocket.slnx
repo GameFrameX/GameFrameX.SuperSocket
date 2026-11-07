@@ -23,6 +23,7 @@
     <Project Path="src/GameFrameX.SuperSocket.WebSocket/GameFrameX.SuperSocket.WebSocket.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test/GameFrameX.SuperSocket.Connection.Tests/GameFrameX.SuperSocket.Connection.Tests.csproj" />
     <Project Path="test/GameFrameX.SuperSocket.Kcp.Tests/GameFrameX.SuperSocket.Kcp.Tests.csproj" />
     <Project Path="test/GameFrameX.SuperSocket.ReliableSession.Tests/GameFrameX.SuperSocket.ReliableSession.Tests.csproj" />
   </Folder>

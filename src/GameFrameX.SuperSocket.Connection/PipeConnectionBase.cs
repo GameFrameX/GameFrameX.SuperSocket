@@ -377,73 +377,144 @@ namespace GameFrameX.SuperSocket.Connection
         {
             var pipelineFilter = _pipelineFilter as IPipelineFilter<TPackageInfo>;
 
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                ReadResult result;
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    ReadResult result;
 
+                    try
+                    {
+                        result = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                        OnInputPipeRead(result);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!IsIgnorableException(e) && !(e is OperationCanceledException))
+                            OnError("Failed to read from the pipe", e);
+
+                        break;
+                    }
+
+                    var buffer = result.Buffer;
+                    SequencePosition consumed = buffer.End;
+                    var completedOrCancelled = result.IsCompleted || result.IsCanceled;
+
+                    if (buffer.Length > 0)
+                    {
+                        BufferFilterResult<TPackageInfo> lastFilterResult = default;
+                        Exception processingException = null;
+                        using var bufferEnumerator = ReadBuffer(buffer, pipelineFilter).GetEnumerator();
+
+                        while (true)
+                        {
+                            BufferFilterResult<TPackageInfo> bufferFilterResult;
+
+                            try
+                            {
+                                if (!bufferEnumerator.MoveNext())
+                                    break;
+
+                                bufferFilterResult = bufferEnumerator.Current;
+                            }
+                            catch (Exception e)
+                            {
+                                processingException = e;
+                                break;
+                            }
+
+                            lastFilterResult = bufferFilterResult;
+
+                            if (bufferFilterResult.Package != null)
+                            {
+                                yield return bufferFilterResult.Package;
+                            }
+
+                            if (bufferFilterResult.Exception != null)
+                            {
+                                OnError("Protocol error", bufferFilterResult.Exception);
+                                CloseReason = Connection.CloseReason.ProtocolError;
+                                CloseSafely();
+                                completedOrCancelled = true;
+                                break;
+                            }
+                        }
+
+                        if (processingException != null)
+                        {
+                            if (!IsIgnorableException(processingException) && !(processingException is OperationCanceledException))
+                                OnError("Failed to process data from the pipe", processingException);
+
+                            if (!CloseReason.HasValue)
+                                CloseReason = Connection.CloseReason.ProtocolError;
+
+                            CloseSafely();
+                            completedOrCancelled = true;
+                        }
+                        else
+                        {
+                            pipelineFilter = _pipelineFilter as IPipelineFilter<TPackageInfo>;
+
+                            if (lastFilterResult.Consumed > 0)
+                            {
+                                consumed = buffer.GetPosition(lastFilterResult.Consumed);
+                                if (!TryAdvanceReader(reader, consumed, buffer.End))
+                                    completedOrCancelled = true;
+                            }
+                            else
+                            {
+                                if (!TryAdvanceReader(reader, buffer.Start, buffer.End))
+                                    completedOrCancelled = true;
+                            }
+                        }
+                    }
+
+                    if (completedOrCancelled)
+                        break;
+                }
+            }
+            finally
+            {
                 try
                 {
-                    result = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-                    OnInputPipeRead(result);
+                    await CompleteReaderAsync(reader, _isDetaching).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
                     if (!IsIgnorableException(e) && !(e is OperationCanceledException))
-                        OnError("Failed to read from the pipe", e);
-
-                    break;
-                }
-
-                var buffer = result.Buffer;
-
-                SequencePosition consumed = buffer.End;
-
-                var completedOrCancelled = result.IsCompleted || result.IsCanceled;
-
-                if (buffer.Length > 0)
-                {
-                    BufferFilterResult<TPackageInfo> lastFilterResult = default;
-
-                    foreach (var bufferFilterResult in ReadBuffer(buffer, pipelineFilter))
-                    {
-                        lastFilterResult = bufferFilterResult;
-
-                        if (bufferFilterResult.Package != null)
-                        {
-                            yield return bufferFilterResult.Package;
-                        }
-
-                        if (bufferFilterResult.Exception != null)
-                        {
-                            OnError("Protocol error", bufferFilterResult.Exception);
-                            CloseReason = Connection.CloseReason.ProtocolError;
-                            Close();
-                            completedOrCancelled = true;
-                            break;
-                        }
-                    }
-
-                    pipelineFilter = _pipelineFilter as IPipelineFilter<TPackageInfo>;
-
-                    if (lastFilterResult.Consumed > 0)
-                    {
-                        consumed = buffer.GetPosition(lastFilterResult.Consumed);
-                        reader.AdvanceTo(consumed, buffer.End);
-                    }
-                    else
-                    {
-                        reader.AdvanceTo(buffer.Start, buffer.End);
-                    }
-                }
-
-                if (completedOrCancelled)
-                {
-                    break;
+                        OnError("Failed to complete the pipe reader", e);
                 }
             }
+        }
 
-            await CompleteReaderAsync(reader, _isDetaching).ConfigureAwait(false);
-            yield break;
+        private void CloseSafely()
+        {
+            try
+            {
+                Close();
+            }
+            catch (Exception e)
+            {
+                if (!IsIgnorableException(e))
+                    OnError("Failed to close the connection", e);
+            }
+        }
+
+        private bool TryAdvanceReader(PipeReader reader, SequencePosition consumed, SequencePosition examined)
+        {
+            try
+            {
+                reader.AdvanceTo(consumed, examined);
+                return true;
+            }
+            catch (Exception e)
+            {
+                if (!IsIgnorableException(e) && !(e is OperationCanceledException))
+                    OnError("Failed to advance the pipe reader", e);
+
+                CloseSafely();
+                return false;
+            }
         }
 
         private IEnumerable<BufferFilterResult<TPackageInfo>> ReadBuffer<TPackageInfo>(ReadOnlySequence<byte> buffer, IPipelineFilter<TPackageInfo> pipelineFilter)
@@ -475,62 +546,72 @@ namespace GameFrameX.SuperSocket.Connection
                     exception = ex;
                 }
 
+                if (exception == null)
+                {
+                    var needReadMore = false;
+
+                    try
+                    {
+                        var nextFilter = pipelineFilter.NextFilter;
+
+                        if (nextFilter != null)
+                        {
+                            // ProxyProtocolPipelineFilter always is the first filter and its next filter is the actual first filter.
+                            if (bytesConsumedTotal == 0 && pipelineFilter is IProxyProtocolPipelineFilter proxyProtocolPipelineFilter)
+                            {
+                                ProxyInfo = proxyProtocolPipelineFilter.ProxyInfo;
+                            }
+
+                            nextFilter.Context = pipelineFilter.Context; // pass through the context
+                            _pipelineFilter = pipelineFilter = nextFilter;
+                            filterSwitched = true;
+                        }
+
+                        bytesConsumedTotal += readerConsumed;
+
+                        var len = readerConsumed;
+
+                        // nothing has been consumed, need more data
+                        if (len == 0)
+                            len = buffer.Length;
+
+                        if (maxPackageLength > 0 && len > maxPackageLength)
+                        {
+                            exception = new Exception($"Package cannot be larger than {maxPackageLength}.");
+                        }
+
+                        if (exception == null && (packageInfo != null || filterSwitched))
+                        {
+                            // We should reset the previous pipeline filter after switch or parse one full package.
+                            prevPipelineFilter.Reset();
+                        }
+
+                        needReadMore = readerEnd // has consumed all the data in the buffer
+                                        || (packageInfo == null // not parsed a full package yet
+                                            && !filterSwitched); // and not switch to another filter
+
+                        if (!readerEnd && readerConsumed > 0)
+                            buffer = buffer.Slice(readerConsumed);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        exception = ex;
+                    }
+
+                    if (exception == null && (packageInfo != null || needReadMore))
+                    {
+                        yield return new BufferFilterResult<TPackageInfo>(packageInfo, bytesConsumedTotal);
+
+                        if (needReadMore)
+                            yield break;
+                    }
+                }
+
                 if (exception != null)
                 {
                     yield return new BufferFilterResult<TPackageInfo>(exception);
                     yield break;
-                }
-
-                var nextFilter = pipelineFilter.NextFilter;
-
-                if (nextFilter != null)
-                {
-                    // ProxyProtocolPipelineFilter always is the first filter and its next filter is the actual first filter.
-                    if (bytesConsumedTotal == 0 && pipelineFilter is IProxyProtocolPipelineFilter proxyProtocolPipelineFilter)
-                    {
-                        ProxyInfo = proxyProtocolPipelineFilter.ProxyInfo;
-                    }
-
-                    nextFilter.Context = pipelineFilter.Context; // pass through the context
-                    _pipelineFilter = pipelineFilter = nextFilter;
-                    filterSwitched = true;
-                }
-
-                bytesConsumedTotal += readerConsumed;
-
-                var len = readerConsumed;
-
-                // nothing has been consumed, need more data
-                if (len == 0)
-                    len = buffer.Length;
-
-                if (maxPackageLength > 0 && len > maxPackageLength)
-                {
-                    yield return new BufferFilterResult<TPackageInfo>(new Exception($"Package cannot be larger than {maxPackageLength}."));
-                    yield break;
-                }
-
-                if (packageInfo != null || filterSwitched)
-                {
-                    // We should reset the previous pipeline filter after switch or parse one full package.
-                    prevPipelineFilter.Reset();
-                }
-
-                var needReadMore = readerEnd // has consumed all the data in the buffer
-                                   || (packageInfo == null // not parsed a full package yet
-                                       && !filterSwitched); // and not switch to another filter
-
-                if (!readerEnd && readerConsumed > 0)
-                    buffer = buffer.Slice(readerConsumed);
-
-                if (packageInfo != null || needReadMore)
-                {
-                    yield return new BufferFilterResult<TPackageInfo>(packageInfo, bytesConsumedTotal);
-
-                    if (needReadMore)
-                    {
-                        yield break;
-                    }
                 }
             }
         }
