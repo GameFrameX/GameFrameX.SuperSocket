@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v6
       - name: Setup .NET Core
@@ -28,5 +27,30 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Publish To Nuget
-        run: dotnet nuget push ./bin/app/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate        
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-packages
+          path: ./bin/app/*.nupkg
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download NuGet packages
+        uses: actions/download-artifact@v8
+        with:
+          name: nuget-packages
+          path: ./artifacts
+
+      - name: Publish with NuGet Trusted Publishing
+        uses: GameFrameX/public-github-actions/.github/actions/publish-nuget@main
+        with:
+          package-path: ./artifacts/*.nupkg
+          nuget-user: ${{ secrets.NUGET_USER }}

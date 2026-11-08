@@ -5,8 +5,32 @@ on:
 
 jobs:
   release:
+    permissions:
+      contents: write
+      packages: write
     uses: GameFrameX/public-github-actions/.github/workflows/publish-dotnet-release.yml@main
     with:
       dotnet_version: "10.0.x"
       version_props_path: "Directory.Build.props"
     secrets: inherit
+
+  publish-nuget:
+    needs: release
+    if: ${{ needs.release.outputs.release_needed == 'true' && needs.release.outputs.nuget_packages == 'true' }}
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download NuGet packages
+        uses: actions/download-artifact@v8
+        with:
+          name: nuget-packages
+          path: ./artifacts
+
+      - name: Publish with NuGet Trusted Publishing
+        uses: GameFrameX/public-github-actions/.github/actions/publish-nuget@main
+        with:
+          package-path: ./artifacts/*.nupkg
+          nuget-user: ${{ secrets.NUGET_USER }}
